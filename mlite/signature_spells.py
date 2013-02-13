@@ -30,6 +30,13 @@ class Signature:
                 raise TypeError("{} got unexpected kwarg(s): {}".format(
                     self.name, wrong_kwargs))
 
+    def _assert_no_duplicate_args(self, args, kwargs):
+        positional_arguments = self.arguments[:len(args)]
+        duplicate_arguments = [v for v in positional_arguments if v in kwargs]
+        if duplicate_arguments:
+            raise TypeError("{} got multiple values for argument(s) {}".format(
+                self.name, duplicate_arguments))
+
     def construct_arguments(self, args, kwargs, options):
         """
         construct a dictionary of arguments for this signature such that:
@@ -42,3 +49,4 @@ class Signature:
             * there is an unfilled parameter at the end of this process
         """
         self._assert_no_unexpected_kwargs(kwargs)
+        self._assert_no_duplicate_args(args, kwargs)

@@ -13,7 +13,7 @@ def bariza(a, b, c):
     return a, b, c
 
 
-def complex_function_name(a=1, b='foo', c=20):
+def complex_function_name(a=1, b='fo', c=9):
     return a, b, c
 
 
@@ -94,7 +94,7 @@ class SignatureSpellsTest(unittest.TestCase):
                              " on %s expect %s but was %s" % (
                                  f.__name__, kwargs, s.kwargs))
 
-    def test_construct_arguments_with_unexpected_kwargs_raises_TypeError(self):
+    def test_assert_no_unexpected_kwargs_raises_TypeError(self):
         kwargs = {'unexpected': 23}
         self.assertRaises(
             TypeError,
@@ -121,22 +121,44 @@ class SignatureSpellsTest(unittest.TestCase):
             Signature(renamed)._assert_no_unexpected_kwargs,
             kwargs)
 
-    def test_construct_arguments_with_kwargs_and_kwargswildcard_does_not_raise(
-            self):
+    def test_assert_no_unexpected_kwargs_with_kwargswildcard_doesnt_raise(self):
         Signature(FunCTIonWithCAPItals)._assert_no_unexpected_kwargs(
             {'unexpected': 23})
         Signature(__double_underscore__)._assert_no_unexpected_kwargs(
             {'unexpected': 23})
 
-    def test_construct_arguments_with_expected_kwargs_does_not_raise(self):
+    def test_assert_no_unexpected_kwargs_expected_kwargs_does_not_raise(self):
         Signature(complex_function_name)._assert_no_unexpected_kwargs(
             {'a': 4, 'b': 3, 'c': 2})
         Signature(FunCTIonWithCAPItals)._assert_no_unexpected_kwargs(
             {'c': 5})
 
-    def test_construct_arguments_with_kwargs_for_positional_args_does_not_raise(
+    def test_assert_no_unexpected_kwargs_with_kwargs_for_posargs_doesnt_raise(
             self):
         Signature(bariza)._assert_no_unexpected_kwargs(
             {'a': 4, 'b': 3, 'c': 2})
         Signature(FunCTIonWithCAPItals)._assert_no_unexpected_kwargs(
             {'a': 4, 'b': 3, 'c': 2, 'd': 6})
+
+    def test_assert_no_duplicate_args_raises_TypeError(self):
+        with self.assertRaises(TypeError):
+            s = Signature(bariza)
+            s._assert_no_duplicate_args([1, 2, 3], {'a': 4, 'b': 5})
+
+        with self.assertRaises(TypeError):
+            s = Signature(complex_function_name)
+            s._assert_no_duplicate_args([1], {'a': 4})
+
+        with self.assertRaises(TypeError):
+            s = Signature(FunCTIonWithCAPItals)
+            s._assert_no_duplicate_args([1, 2, 3], {'c': 6})
+
+    def test_assert_no_duplicate_args_doesnt_raise_TypeError(self):
+        s = Signature(bariza)
+        s._assert_no_duplicate_args([1, 2], {'c': 5})
+
+        s = Signature(complex_function_name)
+        s._assert_no_duplicate_args([1], {'b': 4})
+
+        s = Signature(FunCTIonWithCAPItals)
+        s._assert_no_duplicate_args([], {'a': 6, 'b': 6, 'c': 6})
