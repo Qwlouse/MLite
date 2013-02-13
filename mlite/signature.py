@@ -24,11 +24,12 @@ class Signature:
         self.kwargs = dict(zip(args[-len(defaults):], defaults))
 
     def _assert_no_unexpected_kwargs(self, kwargs):
-        if self.kw_wildcard_name is None:
-            wrong_kwargs = [v for v in kwargs if v not in self.arguments]
-            if wrong_kwargs:
-                raise TypeError("{} got unexpected kwarg(s): {}".format(
-                    self.name, wrong_kwargs))
+        if self.kw_wildcard_name is not None:
+            return
+        unexpected_kwargs = [v for v in kwargs if v not in self.arguments]
+        if unexpected_kwargs:
+            raise TypeError("{} got unexpected kwarg(s): {}".format(
+                self.name, unexpected_kwargs))
 
     def _assert_no_duplicate_args(self, args, kwargs):
         positional_arguments = self.arguments[:len(args)]
