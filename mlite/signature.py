@@ -37,16 +37,22 @@ class Signature:
             raise TypeError("{} got multiple values for argument(s) {}".format(
                 self.name, duplicate_arguments))
 
-    def _absorb_options(self, args, kwargs, options):
-        free_args = [a for a in self.arguments[len(args):] if a not in kwargs]
-        for f in free_args:
+    def _fill_in_options(self, args, kwargs, options):
+        free_params = [a for a in self.arguments[len(args):] if a not in kwargs]
+        for f in free_params:
             if f in options:
                 kwargs[f] = options[f]
         return args, kwargs
 
+    def _assert_no_missing_args(self, args, kwargs):
+        free_params = [a for a in self.arguments[len(args):] if a not in kwargs]
+        if free_params:
+            raise TypeError("{} is missing value(s) for {}".format(
+                self.name, free_params))
+
     def construct_arguments(self, args, kwargs, options):
         """
-        construct a dictionary of arguments for this signature such that:
+        Construct args list and kwargs dictionary for this signature such that:
           - the original explicit call arguments (args, kwargs) are preserved
           - missing arguments are filled in by name using options (if possible)
           - default arguments are overridden by options
@@ -57,4 +63,6 @@ class Signature:
         """
         self._assert_no_unexpected_kwargs(kwargs)
         self._assert_no_duplicate_args(args, kwargs)
-        args, kwargs = self._absorb_options(args, kwargs, options)
+        args, kwargs = self._fill_in_options(args, kwargs, options)
+        self._assert_no_missing_args(args, kwargs)
+        return args, kwargs
