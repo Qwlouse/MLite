@@ -162,3 +162,60 @@ class SignatureSpellsTest(unittest.TestCase):
 
         s = Signature(FunCTIonWithCAPItals)
         s._assert_no_duplicate_args([], {'a': 6, 'b': 6, 'c': 6})
+
+    def test_absorb_options_without_options_leaves_args_kwargs_unchanged(self):
+        s = Signature(foo)
+        args, kwargs = s._absorb_options([], {}, {})
+        self.assertEqual(args, [])
+        self.assertEqual(kwargs, {})
+
+        s = Signature(bariza)
+        args, kwargs = s._absorb_options([2, 4, 6], {}, {})
+        self.assertEqual(args, [2, 4, 6])
+        self.assertEqual(kwargs, {})
+
+        s = Signature(complex_function_name)
+        args, kwargs = s._absorb_options([2], {'c': 6, 'b': 7}, {})
+        self.assertEqual(args, [2])
+        self.assertEqual(kwargs, {'c': 6, 'b': 7})
+
+        s = Signature(_name_with_underscore_)
+        args, kwargs = s._absorb_options([], {'foo': 7, 'bar': 6}, {})
+        self.assertEqual(args, [])
+        self.assertEqual(kwargs, {'foo': 7, 'bar': 6})
+
+    def test_absorb_options_completes_kwargs_from_options(self):
+        s = Signature(bariza)
+        args, kwargs = s._absorb_options([2, 4], {}, {'c': 6})
+        self.assertEqual(args, [2, 4])
+        self.assertEqual(kwargs, {'c': 6})
+
+        s = Signature(complex_function_name)
+        args, kwargs = s._absorb_options([], {'c': 6, 'b': 7}, {'a': 1})
+        self.assertEqual(args, [])
+        self.assertEqual(kwargs, {'a': 1, 'c': 6, 'b': 7})
+
+        s = Signature(_name_with_underscore_)
+        args, kwargs = s._absorb_options([], {}, {'foo': 7, 'bar': 6})
+        self.assertEqual(args, [])
+        self.assertEqual(kwargs, {'foo': 7, 'bar': 6})
+
+    def test_absorb_options_ignores_excess_options(self):
+        s = Signature(bariza)
+        args, kwargs = s._absorb_options([2], {'b': 4},
+                                         {'c': 6, 'foo': 9, 'bar': 0})
+        self.assertEqual(args, [2])
+        self.assertEqual(kwargs, {'b': 4, 'c': 6})
+
+    def test_absorb_options_does_not_overwrite_args_and_kwargs(self):
+        s = Signature(bariza)
+        args, kwargs = s._absorb_options([1, 2], {'c': 3},
+                                         {'a': 6, 'b': 6, 'c': 6})
+        self.assertEqual(args, [1, 2])
+        self.assertEqual(kwargs, {'c': 3})
+
+    def test_absorb_options__overwrites_defaults(self):
+        s = Signature(complex_function_name)
+        args, kwargs = s._absorb_options([], {}, {'a': 11, 'b': 12, 'c': 13})
+        self.assertEqual(args, [])
+        self.assertEqual(kwargs, {'a': 11, 'b': 12, 'c': 13})

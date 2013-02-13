@@ -37,6 +37,13 @@ class Signature:
             raise TypeError("{} got multiple values for argument(s) {}".format(
                 self.name, duplicate_arguments))
 
+    def _absorb_options(self, args, kwargs, options):
+        free_args = [a for a in self.arguments[len(args):] if a not in kwargs]
+        for f in free_args:
+            if f in options:
+                kwargs[f] = options[f]
+        return args, kwargs
+
     def construct_arguments(self, args, kwargs, options):
         """
         construct a dictionary of arguments for this signature such that:
@@ -50,3 +57,4 @@ class Signature:
         """
         self._assert_no_unexpected_kwargs(kwargs)
         self._assert_no_duplicate_args(args, kwargs)
+        args, kwargs = self._absorb_options(args, kwargs, options)
