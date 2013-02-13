@@ -47,7 +47,8 @@ class Signature:
 
     def _assert_no_missing_args(self, args, kwargs):
         free_params = [a for a in self.arguments[len(args):] if a not in kwargs]
-        if free_params:
+        missing_args = [m for m in free_params if m not in self.kwargs]
+        if missing_args:
             raise TypeError("{} is missing value(s) for {}".format(
                 self.name, free_params))
 

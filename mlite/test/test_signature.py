@@ -219,3 +219,28 @@ class SignatureSpellsTest(unittest.TestCase):
         args, kwargs = s._fill_in_options([], {}, {'a': 11, 'b': 12, 'c': 13})
         self.assertEqual(args, [])
         self.assertEqual(kwargs, {'a': 11, 'b': 12, 'c': 13})
+
+    def test_assert_no_missing_args_raises_if_args_unfilled(self):
+        s = Signature(bariza)
+        with self.assertRaises(TypeError):
+            s._assert_no_missing_args([], {})
+
+        with self.assertRaises(TypeError):
+            s._assert_no_missing_args([1, 2], {})
+
+        with self.assertRaises(TypeError):
+            s._assert_no_missing_args([1, 2], {'a': 3})
+
+        with self.assertRaises(TypeError):
+            s._assert_no_missing_args([1], {'c': 5})
+
+    def test_assert_no_missing_args_does_not_raise_if_all_args_filled(self):
+        s = Signature(bariza)
+        s._assert_no_missing_args([1, 2, 3], {})
+        s._assert_no_missing_args([1, 2], {'c': 6})
+        s._assert_no_missing_args([1], {'b': 6, 'c': 6})
+        s._assert_no_missing_args([], {'a': 6, 'b': 6, 'c': 6})
+
+    def test_assert_no_missing_args_does_not_raise_for_missing_defaults(self):
+        s = Signature(complex_function_name)
+        s._assert_no_missing_args([], {})
