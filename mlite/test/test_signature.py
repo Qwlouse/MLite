@@ -33,6 +33,14 @@ def old_name(verylongvariablename):
     return verylongvariablename
 
 
+def generic(*args, **kwargs):
+    return args, kwargs
+
+
+def onlykwrgs(**kwargs):
+    return kwargs
+
+
 renamed = old_name
 
 functions = [foo, bariza, complex_function_name, FunCTIonWithCAPItals,
@@ -244,3 +252,25 @@ class SignatureSpellsTest(unittest.TestCase):
     def test_assert_no_missing_args_does_not_raise_for_missing_defaults(self):
         s = Signature(complex_function_name)
         s._assert_no_missing_args([], {})
+
+    def test_unicode_for_functions(self):
+        self.assertEqual(Signature(foo).__unicode__(),
+                         "foo()")
+        self.assertEqual(Signature(bariza).__unicode__(),
+                         "bariza(a, b, c)")
+        self.assertEqual(Signature(complex_function_name).__unicode__(),
+                         "complex_function_name(a=1, b='fo', c=9)")
+        self.assertEqual(Signature(FunCTIonWithCAPItals).__unicode__(),
+                         "FunCTIonWithCAPItals(a, b, c=3, **kwargs)")
+        self.assertEqual(Signature(_name_with_underscore_).__unicode__(),
+                         "_name_with_underscore_(foo, bar, *baz)")
+        self.assertEqual(Signature(__double_underscore__).__unicode__(),
+                         "__double_underscore__(man, o, *men, **OO)")
+        self.assertEqual(Signature(old_name).__unicode__(),
+                         "old_name(verylongvariablename)")
+        self.assertEqual(Signature(renamed).__unicode__(),
+                         "old_name(verylongvariablename)")
+        self.assertEqual(Signature(generic).__unicode__(),
+                         "generic(*args, **kwargs)")
+        self.assertEqual(Signature(onlykwrgs).__unicode__(),
+                         "onlykwrgs(**kwargs)")
