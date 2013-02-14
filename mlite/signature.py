@@ -40,6 +40,9 @@ class Signature:
             kw_wc=kw_wc
         )
 
+    def __repr__(self):
+        return "<Signature at 0x{1:x} for '{0}'>".format(self.name, id(self))
+
     def _assert_no_unexpected_kwargs(self, kwargs):
         if self.kw_wildcard_name is not None:
             return
