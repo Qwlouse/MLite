@@ -243,7 +243,7 @@ class SignatureSpellsTest(unittest.TestCase):
         s = Signature(complex_function_name)
         s.construct_arguments([], {}, {})
 
-    def test_unicode_for_functions(self):
+    def test_unicode_(self):
         self.assertEqual(Signature(foo).__unicode__(),
                          "foo()")
         self.assertEqual(Signature(bariza).__unicode__(),
@@ -264,3 +264,26 @@ class SignatureSpellsTest(unittest.TestCase):
                          "generic(*args, **kwargs)")
         self.assertEqual(Signature(onlykwrgs).__unicode__(),
                          "onlykwrgs(**kwargs)")
+
+    def test_repr_(self):
+        regex = "<Signature at 0x[0-9a-fA-F]+ for '%s'>"
+        self.assertRegex(Signature(foo).__repr__(),
+                         regex % "foo")
+        self.assertRegex(Signature(bariza).__repr__(),
+                         regex % "bariza")
+        self.assertRegex(Signature(complex_function_name).__repr__(),
+                         regex % "complex_function_name")
+        self.assertRegex(Signature(FunCTIonWithCAPItals).__repr__(),
+                         regex % "FunCTIonWithCAPItals")
+        self.assertRegex(Signature(_name_with_underscore_).__repr__(),
+                         regex % "_name_with_underscore_")
+        self.assertRegex(Signature(__double_underscore__).__repr__(),
+                         regex % "__double_underscore__")
+        self.assertRegex(Signature(old_name).__repr__(),
+                         regex % "old_name")
+        self.assertRegex(Signature(renamed).__repr__(),
+                         regex % "old_name")
+        self.assertRegex(Signature(generic).__repr__(),
+                         regex % "generic")
+        self.assertRegex(Signature(onlykwrgs).__repr__(),
+                         regex % "onlykwrgs")
