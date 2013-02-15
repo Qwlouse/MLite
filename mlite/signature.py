@@ -24,6 +24,24 @@ class Signature:
         self.positional_args = args[:len(args) - len(defaults)]
         self.kwargs = OrderedDict(zip(args[-len(defaults):], defaults))
 
+    def construct_arguments(self, args, kwargs, options):
+        """
+        Construct args list and kwargs dictionary for this signature such that:
+          - the original explicit call arguments (args, kwargs) are preserved
+          - missing arguments are filled in by name using options (if possible)
+          - default arguments are overridden by options
+          - TypeError is thrown if:
+            * kwargs contains one or more unexpected keyword arguments
+            * conflicting values for a parameter in both args and kwargs
+            * there is an unfilled parameter at the end of this process
+        """
+        self.assert_no_unexpected_args(args)
+        self._assert_no_unexpected_kwargs(kwargs)
+        self._assert_no_duplicate_args(args, kwargs)
+        args, kwargs = self._fill_in_options(args, kwargs, options)
+        self._assert_no_missing_args(args, kwargs)
+        return args, kwargs
+
     def __unicode__(self):
         args = self.positional_args
         vararg = ("*" + self.vararg_name) if self.vararg_name else ""
@@ -79,21 +97,3 @@ class Signature:
         if missing_args:
             raise TypeError("{} is missing value(s) for {}".format(
                 self.name, free_params))
-
-    def construct_arguments(self, args, kwargs, options):
-        """
-        Construct args list and kwargs dictionary for this signature such that:
-          - the original explicit call arguments (args, kwargs) are preserved
-          - missing arguments are filled in by name using options (if possible)
-          - default arguments are overridden by options
-          - TypeError is thrown if:
-            * kwargs contains one or more unexpected keyword arguments
-            * conflicting values for a parameter in both args and kwargs
-            * there is an unfilled parameter at the end of this process
-        """
-        self.assert_no_unexpected_args(args)
-        self._assert_no_unexpected_kwargs(kwargs)
-        self._assert_no_duplicate_args(args, kwargs)
-        args, kwargs = self._fill_in_options(args, kwargs, options)
-        self._assert_no_missing_args(args, kwargs)
-        return args, kwargs
