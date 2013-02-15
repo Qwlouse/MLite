@@ -43,6 +43,14 @@ class Signature:
     def __repr__(self):
         return "<Signature at 0x{1:x} for '{0}'>".format(self.name, id(self))
 
+    def assert_no_unexpected_args(self, args):
+        if self.vararg_name is not None:
+            return
+        if len(args) > len(self.arguments):
+            unexpected_args = args[len(self.arguments):]
+            raise TypeError("{} got unexpected argument(s): {}".format(
+                self.name, unexpected_args))
+
     def _assert_no_unexpected_kwargs(self, kwargs):
         if self.kw_wildcard_name is not None:
             return
@@ -83,6 +91,7 @@ class Signature:
             * conflicting values for a parameter in both args and kwargs
             * there is an unfilled parameter at the end of this process
         """
+        self.assert_no_unexpected_args(args)
         self._assert_no_unexpected_kwargs(kwargs)
         self._assert_no_duplicate_args(args, kwargs)
         args, kwargs = self._fill_in_options(args, kwargs, options)

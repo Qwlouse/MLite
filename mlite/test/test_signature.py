@@ -120,7 +120,26 @@ class SignatureSpellsTest(unittest.TestCase):
         with self.assertRaisesRegex(TypeError, regex):
             Signature(renamed).construct_arguments([], kwargs, {})
 
-   #TODO test unexpected args
+    def test_construct_arguments_with_unexpected_args_raises_TypeError(self):
+        regex = ".*unexpected.*"
+        with self.assertRaisesRegex(TypeError, regex):
+            Signature(foo).construct_arguments([1], {}, {})
+        with self.assertRaisesRegex(TypeError, regex):
+            Signature(bariza).construct_arguments([1, 2, 3, 4], {}, {})
+        with self.assertRaisesRegex(TypeError, regex):
+            s = Signature(complex_function_name)
+            s.construct_arguments([1, 2, 3, 4], {}, {})
+        with self.assertRaisesRegex(TypeError, regex):
+            Signature(old_name).construct_arguments([1, 2], {}, {})
+        with self.assertRaisesRegex(TypeError, regex):
+            Signature(renamed).construct_arguments([1, 2], {}, {})
+
+    def test_construct_arguments_with_varargs_doesnt_raise(self):
+        Signature(generic).construct_arguments([1, 2, 3], {}, {})
+        Signature(__double_underscore__).construct_arguments(
+            [1, 2, 3, 4, 5], {}, {})
+        Signature(_name_with_underscore_).construct_arguments(
+            [1, 2, 3, 4], {}, {})
 
     def test_construct_arguments_with_kwargswildcard_doesnt_raise(self):
         kwargs = {'zimbabwe': 23}
