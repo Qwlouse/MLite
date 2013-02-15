@@ -102,156 +102,146 @@ class SignatureSpellsTest(unittest.TestCase):
                              " on %s expect %s but was %s" % (
                                  f.__name__, kwargs, s.kwargs))
 
-    def test_assert_no_unexpected_kwargs_raises_TypeError(self):
-        kwargs = {'unexpected': 23}
-        self.assertRaises(
-            TypeError,
-            Signature(foo)._assert_no_unexpected_kwargs,
-            kwargs)
-        self.assertRaises(
-            TypeError,
-            Signature(bariza)._assert_no_unexpected_kwargs,
-            kwargs)
-        self.assertRaises(
-            TypeError,
-            Signature(complex_function_name)._assert_no_unexpected_kwargs,
-            kwargs)
-        self.assertRaises(
-            TypeError,
-            Signature(_name_with_underscore_)._assert_no_unexpected_kwargs,
-            kwargs)
-        self.assertRaises(
-            TypeError,
-            Signature(old_name)._assert_no_unexpected_kwargs,
-            kwargs)
-        self.assertRaises(
-            TypeError,
-            Signature(renamed)._assert_no_unexpected_kwargs,
-            kwargs)
-
-    def test_assert_no_unexpected_kwargs_with_kwargswildcard_doesnt_raise(self):
-        Signature(FunCTIonWithCAPItals)._assert_no_unexpected_kwargs(
-            {'unexpected': 23})
-        Signature(__double_underscore__)._assert_no_unexpected_kwargs(
-            {'unexpected': 23})
-
-    def test_assert_no_unexpected_kwargs_expected_kwargs_does_not_raise(self):
-        Signature(complex_function_name)._assert_no_unexpected_kwargs(
-            {'a': 4, 'b': 3, 'c': 2})
-        Signature(FunCTIonWithCAPItals)._assert_no_unexpected_kwargs(
-            {'c': 5})
-
-    def test_assert_no_unexpected_kwargs_with_kwargs_for_posargs_doesnt_raise(
-            self):
-        Signature(bariza)._assert_no_unexpected_kwargs(
-            {'a': 4, 'b': 3, 'c': 2})
-        Signature(FunCTIonWithCAPItals)._assert_no_unexpected_kwargs(
-            {'a': 4, 'b': 3, 'c': 2, 'd': 6})
-
-    def test_assert_no_duplicate_args_raises_TypeError(self):
-        with self.assertRaises(TypeError):
-            s = Signature(bariza)
-            s._assert_no_duplicate_args([1, 2, 3], {'a': 4, 'b': 5})
-
-        with self.assertRaises(TypeError):
+    def test_construct_arguments_with_unexpected_kwargs_raises_TypeError(self):
+        kwargs = {'zimbabwe': 23}
+        regex = ".*unexpected.*zimbabwe.*"
+        with self.assertRaisesRegex(TypeError, regex):
+            Signature(foo).construct_arguments([], kwargs, {})
+        with self.assertRaisesRegex(TypeError, regex):
+            Signature(bariza).construct_arguments([], kwargs, {})
+        with self.assertRaisesRegex(TypeError, regex):
             s = Signature(complex_function_name)
-            s._assert_no_duplicate_args([1], {'a': 4})
+            s.construct_arguments([], kwargs, {})
+        with self.assertRaisesRegex(TypeError, regex):
+            s = Signature(_name_with_underscore_)
+            s.construct_arguments([], kwargs, {})
+        with self.assertRaisesRegex(TypeError, regex):
+            Signature(old_name).construct_arguments([], kwargs, {})
+        with self.assertRaisesRegex(TypeError, regex):
+            Signature(renamed).construct_arguments([], kwargs, {})
 
-        with self.assertRaises(TypeError):
+   #TODO test unexpected args
+
+    def test_construct_arguments_with_kwargswildcard_doesnt_raise(self):
+        kwargs = {'zimbabwe': 23}
+        Signature(FunCTIonWithCAPItals).construct_arguments(
+            [1, 2, 3], kwargs, {})
+        Signature(__double_underscore__).construct_arguments([1, 2], kwargs, {})
+
+    def test_construct_arguments_with_expected_kwargs_does_not_raise(self):
+        s = Signature(complex_function_name)
+        s.construct_arguments([], {'a': 4, 'b': 3, 'c': 2}, {})
+        s = Signature(FunCTIonWithCAPItals)
+        s.construct_arguments([1, 2], {'c': 5}, {})
+
+    def test_construct_arguments_with_kwargs_for_posargs_does_not_raise(self):
+        Signature(bariza).construct_arguments([], {'a': 4, 'b': 3, 'c': 2}, {})
+        s = Signature(FunCTIonWithCAPItals)
+        s.construct_arguments([], {'a': 4, 'b': 3, 'c': 2, 'd': 6}, {})
+
+    def test_construct_arguments_with_duplicate_args_raises_TypeError(self):
+        regex = ".*multiple values.*"
+        with self.assertRaisesRegex(TypeError, regex):
+            s = Signature(bariza)
+            s.construct_arguments([1, 2, 3], {'a': 4, 'b': 5}, {})
+
+        with self.assertRaisesRegex(TypeError, regex):
+            s = Signature(complex_function_name)
+            s.construct_arguments([1], {'a': 4}, {})
+
+        with self.assertRaisesRegex(TypeError, regex):
             s = Signature(FunCTIonWithCAPItals)
-            s._assert_no_duplicate_args([1, 2, 3], {'c': 6})
+            s.construct_arguments([1, 2, 3], {'c': 6}, {})
 
-    def test_assert_no_duplicate_args_doesnt_raise_TypeError(self):
+    def test_construct_arguments_without_duplicates_passes(self):
         s = Signature(bariza)
-        s._assert_no_duplicate_args([1, 2], {'c': 5})
+        s.construct_arguments([1, 2], {'c': 5}, {})
 
         s = Signature(complex_function_name)
-        s._assert_no_duplicate_args([1], {'b': 4})
+        s.construct_arguments([1], {'b': 4}, {})
 
         s = Signature(FunCTIonWithCAPItals)
-        s._assert_no_duplicate_args([], {'a': 6, 'b': 6, 'c': 6})
+        s.construct_arguments([], {'a': 6, 'b': 6, 'c': 6}, {})
 
-    def test_fill_in_options_without_options_leaves_args_kwargs_unchanged(self):
+    def test_construct_arguments_without_options_returns_same_args_kwargs(self):
         s = Signature(foo)
-        args, kwargs = s._fill_in_options([], {}, {})
+        args, kwargs = s.construct_arguments([], {}, {})
         self.assertEqual(args, [])
         self.assertEqual(kwargs, {})
 
         s = Signature(bariza)
-        args, kwargs = s._fill_in_options([2, 4, 6], {}, {})
+        args, kwargs = s.construct_arguments([2, 4, 6], {}, {})
         self.assertEqual(args, [2, 4, 6])
         self.assertEqual(kwargs, {})
 
         s = Signature(complex_function_name)
-        args, kwargs = s._fill_in_options([2], {'c': 6, 'b': 7}, {})
+        args, kwargs = s.construct_arguments([2], {'c': 6, 'b': 7}, {})
         self.assertEqual(args, [2])
         self.assertEqual(kwargs, {'c': 6, 'b': 7})
 
         s = Signature(_name_with_underscore_)
-        args, kwargs = s._fill_in_options([], {'foo': 7, 'bar': 6}, {})
+        args, kwargs = s.construct_arguments([], {'foo': 7, 'bar': 6}, {})
         self.assertEqual(args, [])
         self.assertEqual(kwargs, {'foo': 7, 'bar': 6})
 
-    def test_fill_in_options_completes_kwargs_from_options(self):
+    def test_construct_arguments_completes_kwargs_from_options(self):
         s = Signature(bariza)
-        args, kwargs = s._fill_in_options([2, 4], {}, {'c': 6})
+        args, kwargs = s.construct_arguments([2, 4], {}, {'c': 6})
         self.assertEqual(args, [2, 4])
         self.assertEqual(kwargs, {'c': 6})
 
         s = Signature(complex_function_name)
-        args, kwargs = s._fill_in_options([], {'c': 6, 'b': 7}, {'a': 1})
+        args, kwargs = s.construct_arguments([], {'c': 6, 'b': 7}, {'a': 1})
         self.assertEqual(args, [])
         self.assertEqual(kwargs, {'a': 1, 'c': 6, 'b': 7})
 
         s = Signature(_name_with_underscore_)
-        args, kwargs = s._fill_in_options([], {}, {'foo': 7, 'bar': 6})
+        args, kwargs = s.construct_arguments([], {}, {'foo': 7, 'bar': 6})
         self.assertEqual(args, [])
         self.assertEqual(kwargs, {'foo': 7, 'bar': 6})
 
-    def test_fill_in_options_ignores_excess_options(self):
+    def test_construct_arguments_ignores_excess_options(self):
         s = Signature(bariza)
-        args, kwargs = s._fill_in_options([2], {'b': 4},
-                                          {'c': 6, 'foo': 9, 'bar': 0})
+        args, kwargs = s.construct_arguments([2], {'b': 4},
+                                             {'c': 6, 'foo': 9, 'bar': 0})
         self.assertEqual(args, [2])
         self.assertEqual(kwargs, {'b': 4, 'c': 6})
 
-    def test_fill_in_options_does_not_overwrite_args_and_kwargs(self):
+    def test_construct_arguments_does_not_overwrite_args_and_kwargs(self):
         s = Signature(bariza)
-        args, kwargs = s._fill_in_options([1, 2], {'c': 3},
-                                          {'a': 6, 'b': 6, 'c': 6})
+        args, kwargs = s.construct_arguments([1, 2], {'c': 3},
+                                             {'a': 6, 'b': 6, 'c': 6})
         self.assertEqual(args, [1, 2])
         self.assertEqual(kwargs, {'c': 3})
 
-    def test_fill_in_options_overwrites_defaults(self):
+    def test_construct_arguments_overwrites_defaults(self):
         s = Signature(complex_function_name)
-        args, kwargs = s._fill_in_options([], {}, {'a': 11, 'b': 12, 'c': 13})
+        args, kwargs = s.construct_arguments([], {}, {'a': 11, 'b': 12, 'c': 7})
         self.assertEqual(args, [])
-        self.assertEqual(kwargs, {'a': 11, 'b': 12, 'c': 13})
+        self.assertEqual(kwargs, {'a': 11, 'b': 12, 'c': 7})
 
-    def test_assert_no_missing_args_raises_if_args_unfilled(self):
+    def test_construct_arguments_raises_if_args_unfilled(self):
         s = Signature(bariza)
-        with self.assertRaises(TypeError):
-            s._assert_no_missing_args([], {})
+        regex = ".*missing.*"
+        with self.assertRaisesRegex(TypeError, regex):
+            s.construct_arguments([], {}, {})
+        with self.assertRaisesRegex(TypeError, regex):
+            s.construct_arguments([1, 2], {}, {})
+        with self.assertRaisesRegex(TypeError, regex):
+            s.construct_arguments([1], {'b': 3}, {})
+        with self.assertRaisesRegex(TypeError, regex):
+            s.construct_arguments([1], {'c': 5}, {})
 
-        with self.assertRaises(TypeError):
-            s._assert_no_missing_args([1, 2], {})
-
-        with self.assertRaises(TypeError):
-            s._assert_no_missing_args([1, 2], {'a': 3})
-
-        with self.assertRaises(TypeError):
-            s._assert_no_missing_args([1], {'c': 5})
-
-    def test_assert_no_missing_args_does_not_raise_if_all_args_filled(self):
+    def test_construct_arguments_does_not_raise_if_all_args_filled(self):
         s = Signature(bariza)
-        s._assert_no_missing_args([1, 2, 3], {})
-        s._assert_no_missing_args([1, 2], {'c': 6})
-        s._assert_no_missing_args([1], {'b': 6, 'c': 6})
-        s._assert_no_missing_args([], {'a': 6, 'b': 6, 'c': 6})
+        s.construct_arguments([1, 2, 3], {}, {})
+        s.construct_arguments([1, 2], {'c': 6}, {})
+        s.construct_arguments([1], {'b': 6, 'c': 6}, {})
+        s.construct_arguments([], {'a': 6, 'b': 6, 'c': 6}, {})
 
-    def test_assert_no_missing_args_does_not_raise_for_missing_defaults(self):
+    def test_construct_arguments_does_not_raise_for_missing_defaults(self):
         s = Signature(complex_function_name)
-        s._assert_no_missing_args([], {})
+        s.construct_arguments([], {}, {})
 
     def test_unicode_for_functions(self):
         self.assertEqual(Signature(foo).__unicode__(),
