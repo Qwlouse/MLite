@@ -24,6 +24,9 @@ class Signature:
         self.positional_args = args[:len(args) - len(defaults)]
         self.kwargs = OrderedDict(zip(args[-len(defaults):], defaults))
 
+    def get_free_parameters(self, args, kwargs):
+        return [a for a in self.arguments[len(args):] if a not in kwargs]
+
     def construct_arguments(self, args, kwargs, options):
         """
         Construct args list and kwargs dictionary for this signature such that:
@@ -85,14 +88,14 @@ class Signature:
                 self.name, duplicate_arguments))
 
     def _fill_in_options(self, args, kwargs, options):
-        free_params = [a for a in self.arguments[len(args):] if a not in kwargs]
+        free_params = self.get_free_parameters(args, kwargs)
         for f in free_params:
             if f in options:
                 kwargs[f] = options[f]
         return args, kwargs
 
     def _assert_no_missing_args(self, args, kwargs):
-        free_params = [a for a in self.arguments[len(args):] if a not in kwargs]
+        free_params = self.get_free_parameters(args, kwargs)
         missing_args = [m for m in free_params if m not in self.kwargs]
         if missing_args:
             raise TypeError("{} is missing value(s) for {}".format(

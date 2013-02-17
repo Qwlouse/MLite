@@ -102,6 +102,18 @@ class SignatureSpellsTest(unittest.TestCase):
                              " on %s expect %s but was %s" % (
                                  f.__name__, kwargs, s.kwargs))
 
+    def test_get_free_parameters(self):
+        free = Signature(foo).get_free_parameters([], {})
+        self.assertEqual(free, [])
+        free = Signature(bariza).get_free_parameters([], {'c' : 3})
+        self.assertEqual(free, ['a', 'b'])
+        free = Signature(complex_function_name).get_free_parameters([], {})
+        self.assertEqual(free, ['a', 'b', 'c'])
+        free = Signature(_name_with_underscore_).get_free_parameters([], {})
+        self.assertEqual(free, ['foo', 'bar'])
+        s = Signature(__double_underscore__)
+        self.assertEqual(s.get_free_parameters([1, 2, 3], {}), [])
+
     def test_construct_arguments_with_unexpected_kwargs_raises_TypeError(self):
         kwargs = {'zimbabwe': 23}
         regex = ".*unexpected.*zimbabwe.*"
