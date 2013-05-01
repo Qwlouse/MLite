@@ -105,7 +105,7 @@ class SignatureSpellsTest(unittest.TestCase):
     def test_get_free_parameters(self):
         free = Signature(foo).get_free_parameters([], {})
         self.assertEqual(free, [])
-        free = Signature(bariza).get_free_parameters([], {'c' : 3})
+        free = Signature(bariza).get_free_parameters([], {'c': 3})
         self.assertEqual(free, ['a', 'b'])
         free = Signature(complex_function_name).get_free_parameters([], {})
         self.assertEqual(free, ['a', 'b', 'c'])
