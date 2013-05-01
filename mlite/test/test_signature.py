@@ -1,7 +1,7 @@
 #!/usr/bin/python
 # coding=utf-8
 import unittest
-from mlite.signature import Signature
+from ..signature import Signature
 
 
 ##############  function definitions to test on ################################
