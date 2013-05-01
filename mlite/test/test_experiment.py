@@ -135,7 +135,7 @@ class ExperimentTest(unittest.TestCase):
         ex.remove_observer(m)
         self.assertNotIn(m, ex.observers)
 
-    def test_observability(self):
+    def test_experiment_created_event(self):
         m = Mock()
         name = 'test1234'
         options = {'foo': 'bar', 'baz': 3}
@@ -157,3 +157,17 @@ class ExperimentTest(unittest.TestCase):
                                                       seed=123457,
                                                       mainfile=__file__,
                                                       doc=__doc__)
+
+    def test_experiment_start_completed_events(self):
+        m = Mock()
+        ex = Experiment('test1234')
+        ex.add_observer(m)
+
+        @ex.main
+        def bar():
+            return 7
+
+        ex.run()
+
+        self.assertTrue(m.experiment_started_event.called)
+        self.assertTrue(m.experiment_completed_event.called)

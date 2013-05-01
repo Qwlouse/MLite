@@ -48,6 +48,14 @@ class Experiment(object):
             except AttributeError:
                 pass
 
+    def emit_completed(self, result):
+        stop_time = time.time()
+        for o in self.observers:
+            try:
+                o.experiment_completed_event(stop_time, result)
+            except AttributeError:
+                pass
+
     def stage(self, f):
         seed = self.rnd.randint(0, 1000000)
         stage_func = StageFunction(f, seed, default_options=self.options)
@@ -62,7 +70,10 @@ class Experiment(object):
         return self.main_stage
 
     def run(self, *args, **kwargs):
-        return self.main_stage(*args, **kwargs)
+        self.emit_started(args, kwargs)
+        result = self.main_stage(*args, **kwargs)
+        self.emit_completed(result)
+        return result
 
     def reseed(self):
         if self.seed is None:
