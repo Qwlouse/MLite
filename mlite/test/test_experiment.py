@@ -1,5 +1,9 @@
 #!/usr/bin/python
 # coding=utf-8
+"""
+Some tests for the experiment class
+"""
+
 from __future__ import division, print_function, unicode_literals
 import unittest
 from ..experiment import Experiment
@@ -104,10 +108,52 @@ class ExperimentTest(unittest.TestCase):
         self.assertEqual(b1, b2)
         self.assertEqual(c1, c2)
 
+    def test_add_observer(self):
+        ex = Experiment('name')
+        m = object()
+        ex.add_observer(m)
+        self.assertIn(m, ex.observers)
+
+    def test_add_observer_twice(self):
+        ex = Experiment('name')
+        m = object()
+        ex.add_observer(m)
+        ex.add_observer(m)
+        self.assertEqual(ex.observers.count(m), 1)
+
+    def test_remove_nonobserver(self):
+        ex = Experiment('name')
+        m = object()
+        self.assertNotIn(m, ex.observers)
+        ex.remove_observer(m)
+        self.assertNotIn(m, ex.observers)
+
+    def test_add_and_remove_observer(self):
+        ex = Experiment('name')
+        m = object()
+        ex.add_observer(m)
+        ex.remove_observer(m)
+        self.assertNotIn(m, ex.observers)
+
     def test_observability(self):
         m = Mock()
         name = 'test1234'
         options = {'foo': 'bar', 'baz': 3}
-        ex = Experiment(name, seed=1234567, options=options, observers=[m])
+        ex = Experiment(name, seed=123457, options=options)
+        ex.add_observer(m)
+
+        @ex.stage
+        def foo(rnd):
+            return rnd.randint(5, 1000000)
+
+        @ex.main
+        def bar(rnd):
+            return rnd.randint(5, 1000000)
+
         self.assertTrue(m.experiment_created_event.called)
-        m.experiment_created_event.assert_called_with(name, options)
+        m.experiment_created_event.assert_called_with(name=name,
+                                                      options=options,
+                                                      stages=[foo, bar],
+                                                      seed=123457,
+                                                      mainfile=__file__,
+                                                      doc=__doc__)

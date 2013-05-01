@@ -1,28 +1,42 @@
 #!/usr/bin/python
 # coding=utf-8
-
 from __future__ import division, print_function, unicode_literals
-from .stage import StageFunction
+import inspect
 from numpy.random import RandomState
 import time
+from .stage import StageFunction
 
 
 class Experiment(object):
     def __init__(self, name, seed=None, options=(), observers=()):
         self.name = name
         self.stages = []
-        self.main_stage = None
         self.seed = seed
         self.reseed()
         self.options = options
         self.observers = list(observers)
-        self.emit_created()
+        self.main_stage = None
+        self.mainfile = None
+        self.__doc__ = None
 
     ################### Observable interface ###################################
+    def add_observer(self, obs):
+        if not obs in self.observers:
+            self.observers.append(obs)
+
+    def remove_observer(self, obs):
+        if obs in self.observers:
+            self.observers.remove(obs)
+
     def emit_created(self):
         for o in self.observers:
             try:
-                o.experiment_created_event(self.name, self.options)
+                o.experiment_created_event(name=self.name,
+                                           options=self.options,
+                                           stages=self.stages,
+                                           seed=self.seed,
+                                           mainfile=self.mainfile,
+                                           doc=self.__doc__)
             except AttributeError:
                 pass
 
@@ -42,6 +56,9 @@ class Experiment(object):
 
     def main(self, f):
         self.main_stage = self.stage(f)
+        self.mainfile = inspect.getabsfile(f)
+        self.__doc__ = inspect.getmodule(f).__doc__
+        self.emit_created()
         return self.main_stage
 
     def run(self, *args, **kwargs):
