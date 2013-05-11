@@ -3,13 +3,14 @@
 from __future__ import division, print_function, unicode_literals
 import inspect
 from numpy.random import RandomState
+import os
 import time
 from .stage import StageFunction
 from utils import generate_seed
 
 
 class Experiment(object):
-    def __init__(self, name, seed=None, options=(), observers=()):
+    def __init__(self, name=None, seed=None, options=(), observers=()):
         self.name = name
         self.stages = []
         self.seed = seed
@@ -67,6 +68,8 @@ class Experiment(object):
     def main(self, f):
         self.main_stage = self.stage(f)
         self.mainfile = inspect.getabsfile(f)
+        if self.name is None:
+            self.name = os.path.basename(self.mainfile).rsplit('.', 1)[0]
         self.__doc__ = inspect.getmodule(f).__doc__
         self.emit_created()
         return self.main_stage
