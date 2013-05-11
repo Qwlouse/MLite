@@ -30,7 +30,8 @@ class StageFunctionTest(unittest.TestCase):
         def test(rnd):
             return rnd.randint(5, 1000000)
 
-        test_stage = StageFunction(test, 0)
+        test_stage = StageFunction(test)
+        test_stage.seed = 0
         a1 = test_stage()
         a2 = test_stage()
         self.assertGreaterEqual(a1, 5)
@@ -41,8 +42,10 @@ class StageFunctionTest(unittest.TestCase):
         def test(rnd):
             return rnd.randint(5, 1000000)
 
-        test_stage1 = StageFunction(test, 0)
-        test_stage2 = StageFunction(test, 0)
+        test_stage1 = StageFunction(test)
+        test_stage1.seed = 0
+        test_stage2 = StageFunction(test)
+        test_stage2.seed = 0
         a1 = test_stage1()
         a2 = test_stage2()
         self.assertEqual(a1, a2)
@@ -51,9 +54,10 @@ class StageFunctionTest(unittest.TestCase):
         def test(rnd):
             return rnd.randint(5, 1000000)
 
-        test_stage = StageFunction(test, 0)
+        test_stage = StageFunction(test)
+        test_stage.seed = 0
         a1 = test_stage()
-        test_stage.reseed()
+        test_stage.seed = 0
         a2 = test_stage()
         self.assertEqual(a1, a2)
 
@@ -61,10 +65,11 @@ class StageFunctionTest(unittest.TestCase):
         def test(k, rnd):
             return [rnd.randint(5, 1000000) for _ in range(k)]
 
-        test_stage = StageFunction(test, 0)
+        test_stage = StageFunction(test)
+        test_stage.seed = 0
         test_stage(1)
         a1, = test_stage(1)
-        test_stage.reseed()
+        test_stage.seed = 0
         test_stage(5)
         a2, = test_stage(1)
         self.assertEqual(a1, a2)

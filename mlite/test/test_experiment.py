@@ -72,6 +72,7 @@ class ExperimentTest(unittest.TestCase):
         def randomTest(rnd):
             return rnd.randint(5, 1000000)
 
+        ex.reseed()
         a1 = randomTest()
         a2 = randomTest()
         self.assertGreaterEqual(a1, 5)
@@ -93,6 +94,7 @@ class ExperimentTest(unittest.TestCase):
         def mainfunc(rnd):
             return rnd.randint(5, 1000000)
 
+        ex.reseed()
         a1 = randomTest1()
         b1 = randomTest2()
         c1 = mainfunc()
@@ -107,6 +109,36 @@ class ExperimentTest(unittest.TestCase):
         self.assertEqual(a1, a2)
         self.assertEqual(b1, b2)
         self.assertEqual(c1, c2)
+
+    def test_auto_rnd_with_seed_deterministic_per_run(self):
+        ex = Experiment('test', seed=1234567)
+
+        @ex.stage
+        def randomTest(rnd):
+            return rnd.randint(5, 1000000)
+
+        @ex.main
+        def mainfunc(rnd):
+            return randomTest() + rnd.randint(5, 1000000)
+
+        a = ex.run()
+        b = ex.run()
+        self.assertEqual(a, b)
+
+    def test_auto_rnd_without_seed_is_random_per_run(self):
+        ex = Experiment('test')
+
+        @ex.stage
+        def randomTest(rnd):
+            return rnd.randint(5, 1000000)
+
+        @ex.main
+        def mainfunc(rnd):
+            return randomTest() + rnd.randint(5, 1000000)
+
+        a = ex.run()
+        b = ex.run()
+        self.assertNotEqual(a, b)
 
     def test_add_observer(self):
         ex = Experiment('name')

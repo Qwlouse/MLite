@@ -5,6 +5,7 @@ import inspect
 from numpy.random import RandomState
 import time
 from .stage import StageFunction
+from utils import generate_seed
 
 
 class Experiment(object):
@@ -12,7 +13,6 @@ class Experiment(object):
         self.name = name
         self.stages = []
         self.seed = seed
-        self.reseed()
         self.options = options
         self.observers = list(observers)
         self.main_stage = None
@@ -44,7 +44,10 @@ class Experiment(object):
         start_time = time.time()
         for o in self.observers:
             try:
-                o.experiment_started_event(start_time, self.seed, args, kwargs)
+                o.experiment_started_event(start_time=start_time,
+                                           run_seed=self.run_seed,
+                                           args=args,
+                                           kwargs=kwargs)
             except AttributeError:
                 pass
 
@@ -57,8 +60,7 @@ class Experiment(object):
                 pass
 
     def stage(self, f):
-        seed = self.rnd.randint(0, 1000000)
-        stage_func = StageFunction(f, seed, default_options=self.options)
+        stage_func = StageFunction(f, default_options=self.options)
         self.stages.append(stage_func)
         return stage_func
 
@@ -70,6 +72,7 @@ class Experiment(object):
         return self.main_stage
 
     def run(self, *args, **kwargs):
+        self.reseed()
         self.emit_started(args, kwargs)
         result = self.main_stage(*args, **kwargs)
         self.emit_completed(result)
@@ -77,10 +80,10 @@ class Experiment(object):
 
     def reseed(self):
         if self.seed is None:
-            self.rnd = RandomState()
+            self.run_seed = generate_seed()
         else:
-            self.rnd = RandomState(self.seed)
+            self.run_seed = self.seed
+        self.rnd = RandomState(self.run_seed)
 
         for s in self.stages:
-            s.seed = self.rnd.randint(0, 1000000)
-            s.reseed()
+            s.seed = generate_seed(self.rnd)
