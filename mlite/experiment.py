@@ -2,15 +2,18 @@
 # coding=utf-8
 from __future__ import division, print_function, unicode_literals
 import inspect
-from numpy.random import RandomState
 import os
 import time
+from numpy.random import RandomState
 from .stage import StageFunction
-from utils import generate_seed
+from .utils import generate_seed, create_basic_stream_logger
 
 
 class Experiment(object):
-    def __init__(self, name=None, seed=None, options=(), observers=()):
+    CONSTRUCTING, WAITING, RUNNING, COMPLETED = range(4)
+
+    def __init__(self, name=None, seed=None, options=(), observers=(),
+                 logger=None):
         self.name = name
         self.stages = []
         self.seed = seed
@@ -19,6 +22,9 @@ class Experiment(object):
         self.main_stage = None
         self.mainfile = None
         self.__doc__ = None
+        self.logger = logger
+        self.status = Experiment.CONSTRUCTING
+
 
     ################### Observable interface ###################################
     def add_observer(self, obs):
@@ -71,15 +77,27 @@ class Experiment(object):
         if self.name is None:
             self.name = os.path.basename(self.mainfile).rsplit('.', 1)[0]
         self.__doc__ = inspect.getmodule(f).__doc__
+        self.status = Experiment.WAITING
         self.emit_created()
         return self.main_stage
 
     def run(self, *args, **kwargs):
-        self.reseed()
+        self.initialize()
         self.emit_started(args, kwargs)
-        result = self.main_stage(*args, **kwargs)
-        self.emit_completed(result)
-        return result
+        try:
+            result = self.main_stage(*args, **kwargs)
+            self.status = Experiment.COMPLETED
+            self.emit_completed(result)
+            return result
+        except:
+            self.status = Experiment.FAILED
+            self.emit_failed()
+            raise
+
+    def initialize(self):
+        self.reseed()
+        self.set_up_logging()
+        self.status = Experiment.RUNNING
 
     def reseed(self):
         if self.seed is None:
@@ -90,3 +108,7 @@ class Experiment(object):
 
         for s in self.stages:
             s.seed = generate_seed(self.rnd)
+
+    def set_up_logging(self):
+        if self.logger is None:
+            self.logger = create_basic_stream_logger(self.name)

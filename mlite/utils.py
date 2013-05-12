@@ -21,6 +21,7 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 from __future__ import division, print_function, unicode_literals
+import logging
 import numpy as np
 import sys
 
@@ -32,3 +33,14 @@ def generate_seed(rnd=None):
         return np.random.randint(*SEED_RANGE)
     else:
         return rnd.randint(*SEED_RANGE)
+
+
+def create_basic_stream_logger(name, level=logging.INFO):
+    logger = logging.getLogger(name)
+    logger.setLevel(level)
+    ch = logging.StreamHandler()
+    ch.setLevel(level)
+    formatter = logging.Formatter('%(levelname)s - %(name)s - %(message)s')
+    ch.setFormatter(formatter)
+    logger.addHandler(ch)
+    return logger

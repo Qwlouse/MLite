@@ -1,10 +1,11 @@
 #!/usr/bin/python
 # coding=utf-8
 import inspect
-import time
-from .signature import Signature
+
 from numpy.random import RandomState
-from utils import generate_seed
+
+from .signature import Signature
+from mlite.utils import generate_seed
 
 
 class StageFunction(object):
