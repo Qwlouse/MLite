@@ -1,0 +1,51 @@
+*.py[co]
+
+# Packages
+*.egg
+*.egg-info
+dist
+build
+eggs
+parts
+bin
+var
+sdist
+develop-eggs
+.installed.cfg
+
+# Installer logs
+pip-log.txt
+
+# Unit test / coverage reports
+.coverage
+.tox
+
+#Translations
+*.mo
+
+#Mr Developer
+.mr.developer.cfg
+
+# Idea project
+.idea
+
+# Gedit temporary files
+*~
+=======
+# Idea project
+.idea
+
+# Python object files
+*.py[co]
+
+# Gedit temporary files
+*~
+
+# Sumatra Files
+.smt
+
+# Data Files
+Data
+
+# The manifest file
+MANIFEST
