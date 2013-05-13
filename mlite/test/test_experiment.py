@@ -198,7 +198,7 @@ class ExperimentTest(unittest.TestCase):
 
         @ex.main
         def bar(a, b, c):
-            return 7
+            return 1 + a + b + c
 
         ex.run(1, 2, c=3)
         t2 = time.time()
@@ -220,5 +220,3 @@ class ExperimentTest(unittest.TestCase):
         self.assertGreaterEqual(stop_time, t1)
         self.assertGreaterEqual(t2, stop_time)
         self.assertGreaterEqual(stop_time, start_time)
-
-
