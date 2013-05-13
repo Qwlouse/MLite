@@ -10,7 +10,7 @@ from .utils import generate_seed, create_basic_stream_logger
 
 
 class Experiment(object):
-    CONSTRUCTING, WAITING, RUNNING, COMPLETED = range(4)
+    CONSTRUCTING, WAITING, RUNNING, COMPLETED, FAILED = range(5)
 
     def __init__(self, name=None, seed=None, options=(), observers=(),
                  logger=None):
@@ -25,7 +25,6 @@ class Experiment(object):
         self.logger = logger
         self.status = Experiment.CONSTRUCTING
 
-
     ################### Observable interface ###################################
     def add_observer(self, obs):
         if not obs in self.observers:
@@ -39,7 +38,6 @@ class Experiment(object):
         for o in self.observers:
             try:
                 o.experiment_created_event(name=self.name,
-                                           options=self.options,
                                            stages=self.stages,
                                            seed=self.seed,
                                            mainfile=self.mainfile,
@@ -52,6 +50,7 @@ class Experiment(object):
         for o in self.observers:
             try:
                 o.experiment_started_event(start_time=start_time,
+                                           options=self.options,
                                            run_seed=self.run_seed,
                                            args=args,
                                            kwargs=kwargs)
@@ -62,10 +61,20 @@ class Experiment(object):
         stop_time = time.time()
         for o in self.observers:
             try:
-                o.experiment_completed_event(stop_time, result)
+                o.experiment_completed_event(stop_time=stop_time,
+                                             result=result)
             except AttributeError:
                 pass
 
+    def emit_failed(self):
+        fail_time = time.time()
+        for o in self.observers:
+            try:
+                o.experiment_aborted_event(fail_time=fail_time)
+            except AttributeError:
+                pass
+                
+    ############################## Decorators ##################################
     def stage(self, f):
         stage_func = StageFunction(f, default_options=self.options)
         self.stages.append(stage_func)
@@ -80,7 +89,8 @@ class Experiment(object):
         self.status = Experiment.WAITING
         self.emit_created()
         return self.main_stage
-
+        
+    ######################## Experiment public Interface #######################
     def run(self, *args, **kwargs):
         self.initialize()
         self.emit_started(args, kwargs)

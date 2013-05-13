@@ -5,10 +5,11 @@ Some tests for the experiment class
 """
 
 from __future__ import division, print_function, unicode_literals
+from mock import Mock
 import unittest
+import time
 from ..experiment import Experiment
 from ..stage import StageFunction
-from mock import Mock
 
 
 class ExperimentTest(unittest.TestCase):
@@ -170,8 +171,7 @@ class ExperimentTest(unittest.TestCase):
     def test_experiment_created_event(self):
         m = Mock()
         name = 'test1234'
-        options = {'foo': 'bar', 'baz': 3}
-        ex = Experiment(name, seed=123457, options=options)
+        ex = Experiment(name, seed=17)
         ex.add_observer(m)
 
         @ex.stage
@@ -184,22 +184,41 @@ class ExperimentTest(unittest.TestCase):
 
         self.assertTrue(m.experiment_created_event.called)
         m.experiment_created_event.assert_called_with(name=name,
-                                                      options=options,
                                                       stages=[foo, bar],
-                                                      seed=123457,
                                                       mainfile=__file__,
+                                                      seed=17,
                                                       doc=__doc__)
 
     def test_experiment_start_completed_events(self):
+        t1 = time.time()
         m = Mock()
-        ex = Experiment('test1234')
+        options = {'foo': 'bar', 'baz': 3}
+        ex = Experiment('test1234', seed=12345, options=options)
         ex.add_observer(m)
 
         @ex.main
-        def bar():
+        def bar(a, b, c):
             return 7
 
-        ex.run()
+        ex.run(1, 2, c=3)
+        t2 = time.time()
 
         self.assertTrue(m.experiment_started_event.called)
+        call_kwargs = m.experiment_started_event.call_args[1]
+        self.assertEqual(call_kwargs['options'], options)
+        self.assertEqual(call_kwargs['run_seed'], 12345)
+        self.assertEqual(call_kwargs['args'], (1, 2))
+        self.assertEqual(call_kwargs['kwargs'], {'c': 3})
+        start_time = call_kwargs['start_time']
+        self.assertGreaterEqual(start_time, t1)
+        self.assertGreaterEqual(t2, start_time)
+
         self.assertTrue(m.experiment_completed_event.called)
+        call_kwargs = m.experiment_completed_event.call_args[1]
+        self.assertEqual(call_kwargs['result'], 7)
+        stop_time = call_kwargs['stop_time']
+        self.assertGreaterEqual(stop_time, t1)
+        self.assertGreaterEqual(t2, stop_time)
+        self.assertGreaterEqual(stop_time, start_time)
+
+
