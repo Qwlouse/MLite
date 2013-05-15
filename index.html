@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Crystal Ball</title>
+    <script src="angular.min.js"></script>
+    <script src="angular-cornercouch.js"></script>
+
+</head>
+<body ng-app="CrystalBall" ng-controller="mliteCtrl">
+<h1>Crystal Ball</h1>
+Search: <input ng-model="searchText"><br>
+<ul>
+    <li ng-repeat="ex in experiments | filter:searchText"> {{ ex.doc.name }}
+        <ul>
+            <li> doc: {{ ex.doc.doc }} </li>
+            <li> result: {{ ex.doc.result }} </li>
+            <li> options:
+                <ul>
+                    <li ng-repeat="(name, val) in ex.doc.options">
+                        {{ name }}={{ val }}
+                    </li>
+                </ul>
+            </li>
+            <li> mainfile: {{ ex.doc.mainfile }} </li>
+            <li> seed: {{ ex.doc.seed }} </li>
+            <li> start_time: {{ ex.doc.start_time * 1000 | date:'medium'}} </li>
+            <li> stop_time: {{ ex.doc.stop_time  * 1000 | date:'medium'}} </li>
+        </ul>
+    </li>
+</ul>
+
+
+<script type="text/javascript">
+var app = angular.module('CrystalBall', ['CornerCouch']);
+function mliteCtrl($scope, $filter, cornercouch) {
+
+    $scope.server = cornercouch();
+    $scope.server.session();
+    $scope.info = $scope.server.info;
+    $scope.experiment_db = $scope.server.getDB('mlite_experiments');
+    $scope.experiment_db.queryAll({'include_docs':true}).success(function (d) {
+        console.log(d);
+        $scope.experiments = d.rows;
+    })
+}
+</script>
+
+</body>
+</html>
