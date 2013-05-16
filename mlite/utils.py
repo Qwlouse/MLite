@@ -44,3 +44,6 @@ def create_basic_stream_logger(name, level=logging.INFO):
     ch.setFormatter(formatter)
     logger.addHandler(ch)
     return logger
+
+NO_LOGGER = logging.getLogger('ignore')
+NO_LOGGER.disabled = 1

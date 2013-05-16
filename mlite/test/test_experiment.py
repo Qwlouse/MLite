@@ -10,15 +10,21 @@ import unittest
 import time
 from ..experiment import Experiment
 from ..stage import StageFunction
+from ..utils import NO_LOGGER
+
+
+def create_test_experiment(name='test', options=(), seed=None):
+    ex = Experiment(name, seed=seed, options=options, logger=NO_LOGGER)
+    return ex
 
 
 class ExperimentTest(unittest.TestCase):
     def test_constructor_with_name_only(self):
-        ex = Experiment('test')
+        ex = create_test_experiment()
         self.assertEqual(ex.name, 'test')
 
     def test_experiment_can_decorate_stages(self):
-        ex = Experiment('test')
+        ex = create_test_experiment()
 
         @ex.stage
         def teststage1():
@@ -34,7 +40,7 @@ class ExperimentTest(unittest.TestCase):
         self.assertEqual(teststage2(), 7)
 
     def test_experiment_decorated_stages_are_stages(self):
-        ex = Experiment('test')
+        ex = create_test_experiment()
 
         @ex.stage
         def teststage():
@@ -43,7 +49,7 @@ class ExperimentTest(unittest.TestCase):
         self.assertIsInstance(teststage, StageFunction)
 
     def test_experiment_decorated_stages_inject_options(self):
-        ex = Experiment('test', options={'a': 10})
+        ex = create_test_experiment(options={'a': 10})
 
         @ex.stage
         def teststage(a=2):
@@ -57,7 +63,7 @@ class ExperimentTest(unittest.TestCase):
         self.assertEqual(teststage(), 2)
 
     def test_experiment_provides_main_decorator(self):
-        ex = Experiment('test')
+        ex = create_test_experiment()
 
         @ex.main
         def mainfunc():
@@ -67,13 +73,13 @@ class ExperimentTest(unittest.TestCase):
         self.assertEqual(ex.run(), 25)
 
     def test_experiment_stage_provides_rnd(self):
-        ex = Experiment('test')
+        ex = create_test_experiment()
 
         @ex.stage
         def randomTest(rnd):
             return rnd.randint(5, 1000000)
 
-        ex.reseed()
+        ex.initialize()
         a1 = randomTest()
         a2 = randomTest()
         self.assertGreaterEqual(a1, 5)
@@ -81,7 +87,7 @@ class ExperimentTest(unittest.TestCase):
         self.assertNotEqual(a1, a2)
 
     def test_auto_rnd_deterministic(self):
-        ex = Experiment('test', seed=1234567)
+        ex = create_test_experiment(seed=1234567)
 
         @ex.stage
         def randomTest1(rnd):
@@ -112,7 +118,7 @@ class ExperimentTest(unittest.TestCase):
         self.assertEqual(c1, c2)
 
     def test_auto_rnd_with_seed_deterministic_per_run(self):
-        ex = Experiment('test', seed=1234567)
+        ex = create_test_experiment(seed=1234567)
 
         @ex.stage
         def randomTest(rnd):
@@ -127,7 +133,7 @@ class ExperimentTest(unittest.TestCase):
         self.assertEqual(a, b)
 
     def test_auto_rnd_without_seed_is_random_per_run(self):
-        ex = Experiment('test')
+        ex = create_test_experiment()
 
         @ex.stage
         def randomTest(rnd):
@@ -142,27 +148,27 @@ class ExperimentTest(unittest.TestCase):
         self.assertNotEqual(a, b)
 
     def test_add_observer(self):
-        ex = Experiment('name')
+        ex = create_test_experiment()
         m = object()
         ex.add_observer(m)
         self.assertIn(m, ex.observers)
 
     def test_add_observer_twice(self):
-        ex = Experiment('name')
+        ex = create_test_experiment()
         m = object()
         ex.add_observer(m)
         ex.add_observer(m)
         self.assertEqual(ex.observers.count(m), 1)
 
     def test_remove_nonobserver(self):
-        ex = Experiment('name')
+        ex = create_test_experiment()
         m = object()
         self.assertNotIn(m, ex.observers)
         ex.remove_observer(m)
         self.assertNotIn(m, ex.observers)
 
     def test_add_and_remove_observer(self):
-        ex = Experiment('name')
+        ex = create_test_experiment()
         m = object()
         ex.add_observer(m)
         ex.remove_observer(m)
@@ -171,7 +177,7 @@ class ExperimentTest(unittest.TestCase):
     def test_experiment_created_event(self):
         m = Mock()
         name = 'test1234'
-        ex = Experiment(name, seed=17)
+        ex = create_test_experiment(name=name, seed=17)
         ex.add_observer(m)
 
         @ex.stage
@@ -193,7 +199,7 @@ class ExperimentTest(unittest.TestCase):
         t1 = time.time()
         m = Mock()
         options = {'foo': 'bar', 'baz': 3}
-        ex = Experiment('test1234', seed=12345, options=options)
+        ex = create_test_experiment(seed=12345, options=options)
         ex.add_observer(m)
 
         @ex.main

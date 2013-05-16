@@ -46,6 +46,7 @@ class Experiment(object):
                 pass
 
     def emit_started(self, args, kwargs):
+        self.logger.info("Experiment started.")
         start_time = time.time()
         for o in self.observers:
             try:
@@ -58,6 +59,7 @@ class Experiment(object):
                 pass
 
     def emit_completed(self, result):
+        self.logger.info("Experiment completed.")
         stop_time = time.time()
         for o in self.observers:
             try:
@@ -67,6 +69,7 @@ class Experiment(object):
                 pass
 
     def emit_failed(self):
+        self.logger.warning("Experiment aborted!")
         fail_time = time.time()
         for o in self.observers:
             try:
@@ -105,13 +108,15 @@ class Experiment(object):
             raise
 
     def initialize(self):
-        self.reseed()
         self.set_up_logging()
+        self.reseed()
         self.status = Experiment.RUNNING
 
     def reseed(self):
         if self.seed is None:
             self.run_seed = generate_seed()
+            self.logger.warning("No seed given. Using seed=%d. Set in config"
+                                " file to repeat experiment", self.run_seed)
         else:
             self.run_seed = self.seed
         self.rnd = RandomState(self.run_seed)
