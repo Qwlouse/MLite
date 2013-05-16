@@ -206,6 +206,7 @@ class ExperimentTest(unittest.TestCase):
         def bar(a, b, c):
             return 1 + a + b + c
 
+        ex.info['a'] = 42
         ex.run(1, 2, c=3)
         t2 = time.time()
 
@@ -215,6 +216,7 @@ class ExperimentTest(unittest.TestCase):
         self.assertEqual(call_kwargs['run_seed'], 12345)
         self.assertEqual(call_kwargs['args'], (1, 2))
         self.assertEqual(call_kwargs['kwargs'], {'c': 3})
+        self.assertEqual(call_kwargs['info']['a'], 42)
         start_time = call_kwargs['start_time']
         self.assertGreaterEqual(start_time, t1)
         self.assertGreaterEqual(t2, start_time)
@@ -222,6 +224,7 @@ class ExperimentTest(unittest.TestCase):
         self.assertTrue(m.experiment_completed_event.called)
         call_kwargs = m.experiment_completed_event.call_args[1]
         self.assertEqual(call_kwargs['result'], 7)
+        self.assertEqual(call_kwargs['info']['a'], 42)
         stop_time = call_kwargs['stop_time']
         self.assertGreaterEqual(stop_time, t1)
         self.assertGreaterEqual(t2, stop_time)

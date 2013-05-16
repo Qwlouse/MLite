@@ -15,6 +15,7 @@ class Experiment(object):
 
     def __init__(self, name=None, seed=None, options=(), observers=(),
                  logger=None):
+        self.info = dict()
         self.logger = logger
         self.options = options
         self.seed = seed
@@ -58,7 +59,8 @@ class Experiment(object):
                                            options=self.options,
                                            run_seed=self._run_seed,
                                            args=args,
-                                           kwargs=kwargs)
+                                           kwargs=kwargs,
+                                           info=self.info)
             except AttributeError:
                 pass
 
@@ -69,7 +71,8 @@ class Experiment(object):
         for o in self._observers:
             try:
                 o.experiment_completed_event(stop_time=stop_time,
-                                             result=result)
+                                             result=result,
+                                             info=self.info)
             except AttributeError:
                 pass
 

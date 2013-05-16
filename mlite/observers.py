@@ -9,10 +9,11 @@ class ExperimentObserver(object):
     def experiment_created_event(self, name, stages, seed, mainfile, doc):
         pass
 
-    def experiment_started_event(self, start_time, options, run_seed, args, kwargs):
+    def experiment_started_event(self, start_time, options, run_seed, args,
+                                 kwargs, info):
         pass
 
-    def experiment_completed_event(self, stop_time, result):
+    def experiment_completed_event(self, stop_time, result, info):
         pass
 
 
@@ -41,7 +42,8 @@ class CouchDBReporter(ExperimentObserver):
         self.experiment_skeleton['mainfile'] = mainfile
         self.experiment_skeleton['doc'] = doc
 
-    def experiment_started_event(self, start_time, options, run_seed, args, kwargs):
+    def experiment_started_event(self, start_time, options, run_seed, args,
+                                 kwargs, info):
         # when an experiment starts, always make a new db entry
         # so we can rerun the same experiment and get multiple entries
         self.experiment_entry = deepcopy(self.experiment_skeleton)
@@ -51,9 +53,11 @@ class CouchDBReporter(ExperimentObserver):
         self.experiment_entry['seed'] = run_seed
         self.experiment_entry['args'] = args
         self.experiment_entry['kwargs'] = kwargs
+        self.experiment_entry['info'] = info
         self.save()
 
-    def experiment_completed_event(self, stop_time, result):
+    def experiment_completed_event(self, stop_time, result, info):
         self.experiment_entry['stop_time'] = stop_time
         self.experiment_entry['result'] = result
+        self.experiment_entry['info'] = info
         self.save()
