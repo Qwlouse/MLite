@@ -1,6 +1,7 @@
 #!/usr/bin/python
 # coding=utf-8
 from __future__ import division, print_function, unicode_literals
+from datetime import timedelta
 import inspect
 import os
 import time
@@ -24,6 +25,7 @@ class Experiment(object):
         self.__doc__ = None
         self.logger = logger
         self.status = Experiment.CONSTRUCTING
+        self.start_time = 0
 
     ################### Observable interface ###################################
     def add_observer(self, obs):
@@ -47,10 +49,10 @@ class Experiment(object):
 
     def emit_started(self, args, kwargs):
         self.logger.info("Experiment started.")
-        start_time = time.time()
+        self.start_time = time.time()
         for o in self.observers:
             try:
-                o.experiment_started_event(start_time=start_time,
+                o.experiment_started_event(start_time=self.start_time,
                                            options=self.options,
                                            run_seed=self.run_seed,
                                            args=args,
@@ -59,8 +61,9 @@ class Experiment(object):
                 pass
 
     def emit_completed(self, result):
-        self.logger.info("Experiment completed.")
         stop_time = time.time()
+        elapsed_time = timedelta(seconds=round(stop_time - self.start_time))
+        self.logger.info("Experiment completed. Took %s", elapsed_time)
         for o in self.observers:
             try:
                 o.experiment_completed_event(stop_time=stop_time,
@@ -91,6 +94,16 @@ class Experiment(object):
         self.__doc__ = inspect.getmodule(f).__doc__
         self.status = Experiment.WAITING
         self.emit_created()
+        if f.__module__ == "__main__":
+            import sys
+            args = sys.argv[1:]
+            ######## run main #########
+            result = self.run(*args)
+            ###########################
+            print(result)
+            # show all plots and wait
+            sys.exit(0)
+
         return self.main_stage
         
     ######################## Experiment public Interface #######################
@@ -116,7 +129,7 @@ class Experiment(object):
         if self.seed is None:
             self.run_seed = generate_seed()
             self.logger.warning("No seed given. Using seed=%d. Set in config"
-                                " file to repeat experiment", self.run_seed)
+                                " file to repeat experiment.", self.run_seed)
         else:
             self.run_seed = self.seed
         self.rnd = RandomState(self.run_seed)
@@ -127,3 +140,4 @@ class Experiment(object):
     def set_up_logging(self):
         if self.logger is None:
             self.logger = create_basic_stream_logger(self.name)
+            self.logger.debug("No logger given. Created basic stream logger.")
