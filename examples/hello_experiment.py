@@ -21,6 +21,7 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 from __future__ import division, print_function, unicode_literals
+from time import sleep
 
 from mlite.experiment import Experiment
 
@@ -30,5 +31,6 @@ ex = Experiment()
 @ex.main
 def main():
     print("Hello Experiment!")
+    sleep(1)
     return 42
 

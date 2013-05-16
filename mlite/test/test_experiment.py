@@ -33,7 +33,7 @@ class ExperimentTest(unittest.TestCase):
         @ex.stage
         def teststage2():
             return 7
-
+        ex._initialize()
         self.assertIn(teststage1, ex._stages)
         self.assertIn(teststage2, ex._stages)
         self.assertEqual(teststage1(), 5)
@@ -54,7 +54,7 @@ class ExperimentTest(unittest.TestCase):
         @ex.stage
         def teststage(a=2):
             return a
-
+        ex._initialize()
         self.assertEqual(teststage(3), 3)
         self.assertEqual(teststage(), 10)
         ex.options['a'] = 23
@@ -69,8 +69,8 @@ class ExperimentTest(unittest.TestCase):
         def mainfunc():
             return 25
 
-        self.assertEqual(mainfunc(), 25)
         self.assertEqual(ex.run(), 25)
+        self.assertEqual(mainfunc(), 25)
 
     def test_experiment_stage_provides_rnd(self):
         ex = create_test_experiment()

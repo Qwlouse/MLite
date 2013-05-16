@@ -143,3 +143,5 @@ class Experiment(object):
         if self.logger is None:
             self.logger = create_basic_stream_logger(self.__name__)
             self.logger.debug("No logger given. Created basic stream logger.")
+        for s in self._stages:
+            s.logger = self.logger.getChild(s.__name__)
