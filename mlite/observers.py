@@ -2,6 +2,7 @@
 # coding=utf-8
 
 from __future__ import division, print_function, unicode_literals
+from copy import deepcopy
 
 
 class ExperimentObserver(object):
@@ -18,6 +19,7 @@ class ExperimentObserver(object):
 class CouchDBReporter(ExperimentObserver):
     def __init__(self, url=None, db_name='mlizard_experiments'):
         super(CouchDBReporter, self).__init__()
+        self.experiment_skeleton = dict()
         self.experiment_entry = dict()
         try:
             import couchdb
@@ -34,13 +36,16 @@ class CouchDBReporter(ExperimentObserver):
         self.db.save(self.experiment_entry)
 
     def experiment_created_event(self, name, stages, seed, mainfile, doc):
-        self.experiment_entry['name'] = name
-        self.experiment_entry['stages'] = [s.__name__ for s in stages]
-        self.experiment_entry['mainfile'] = mainfile
-        self.experiment_entry['doc'] = doc
-        self.save()
+        self.experiment_skeleton['name'] = name
+        self.experiment_skeleton['stages'] = [s.__name__ for s in stages]
+        self.experiment_skeleton['mainfile'] = mainfile
+        self.experiment_skeleton['doc'] = doc
 
     def experiment_started_event(self, start_time, options, run_seed, args, kwargs):
+        # when an experiment starts, always make a new db entry
+        # so we can rerun the same experiment and get multiple entries
+        self.experiment_entry = deepcopy(self.experiment_skeleton)
+
         self.experiment_entry['start_time'] = start_time
         self.experiment_entry['options'] = options
         self.experiment_entry['seed'] = run_seed
