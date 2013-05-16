@@ -20,8 +20,8 @@ def create_test_experiment(name='test', options=(), seed=None):
 
 class ExperimentTest(unittest.TestCase):
     def test_constructor_with_name_only(self):
-        ex = create_test_experiment()
-        self.assertEqual(ex.name, 'test')
+        ex = create_test_experiment('test42')
+        self.assertEqual(ex.__name__, 'test42')
 
     def test_experiment_can_decorate_stages(self):
         ex = create_test_experiment()
@@ -34,8 +34,8 @@ class ExperimentTest(unittest.TestCase):
         def teststage2():
             return 7
 
-        self.assertIn(teststage1, ex.stages)
-        self.assertIn(teststage2, ex.stages)
+        self.assertIn(teststage1, ex._stages)
+        self.assertIn(teststage2, ex._stages)
         self.assertEqual(teststage1(), 5)
         self.assertEqual(teststage2(), 7)
 
@@ -79,7 +79,7 @@ class ExperimentTest(unittest.TestCase):
         def randomTest(rnd):
             return rnd.randint(5, 1000000)
 
-        ex.initialize()
+        ex._initialize()
         a1 = randomTest()
         a2 = randomTest()
         self.assertGreaterEqual(a1, 5)
@@ -101,7 +101,7 @@ class ExperimentTest(unittest.TestCase):
         def mainfunc(rnd):
             return rnd.randint(5, 1000000)
 
-        ex.reseed()
+        ex._initialize()
         a1 = randomTest1()
         b1 = randomTest2()
         c1 = mainfunc()
@@ -109,7 +109,7 @@ class ExperimentTest(unittest.TestCase):
         self.assertNotEqual(b1, c1)
         self.assertNotEqual(c1, a1)
 
-        ex.reseed()
+        ex._initialize()
         c2 = mainfunc()
         a2 = randomTest1()
         b2 = randomTest2()
@@ -151,28 +151,28 @@ class ExperimentTest(unittest.TestCase):
         ex = create_test_experiment()
         m = object()
         ex.add_observer(m)
-        self.assertIn(m, ex.observers)
+        self.assertIn(m, ex._observers)
 
     def test_add_observer_twice(self):
         ex = create_test_experiment()
         m = object()
         ex.add_observer(m)
         ex.add_observer(m)
-        self.assertEqual(ex.observers.count(m), 1)
+        self.assertEqual(ex._observers.count(m), 1)
 
     def test_remove_nonobserver(self):
         ex = create_test_experiment()
         m = object()
-        self.assertNotIn(m, ex.observers)
+        self.assertNotIn(m, ex._observers)
         ex.remove_observer(m)
-        self.assertNotIn(m, ex.observers)
+        self.assertNotIn(m, ex._observers)
 
     def test_add_and_remove_observer(self):
         ex = create_test_experiment()
         m = object()
         ex.add_observer(m)
         ex.remove_observer(m)
-        self.assertNotIn(m, ex.observers)
+        self.assertNotIn(m, ex._observers)
 
     def test_experiment_created_event(self):
         m = Mock()
