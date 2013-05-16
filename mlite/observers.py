@@ -18,7 +18,7 @@ class ExperimentObserver(object):
 
 
 class CouchDBReporter(ExperimentObserver):
-    def __init__(self, url=None, db_name='mlizard_experiments'):
+    def __init__(self, url=None, db_name='mlite_experiments'):
         super(CouchDBReporter, self).__init__()
         self.experiment_skeleton = dict()
         self.experiment_entry = dict()
