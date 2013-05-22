@@ -18,13 +18,15 @@ class ExperimentObserver(object):
 
 
 class CouchDBReporter(ExperimentObserver):
-    def __init__(self, url=None, db_name='mlite_experiments'):
+    def __init__(self, url=None, db_name='mlite_experiments', credentials=None):
         super(CouchDBReporter, self).__init__()
         self.experiment_skeleton = dict()
         self.experiment_entry = dict()
         try:
             import couchdb
             couch = couchdb.Server(url) if url else couchdb.Server()
+            if credentials is not None:
+                couch.resource.credentials = credentials
             if db_name in couch:
                 self.db = couch[db_name]
             else:
