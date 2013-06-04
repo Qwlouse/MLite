@@ -38,6 +38,7 @@ def generate_seed(rnd=None):
 def create_basic_stream_logger(name, level=logging.INFO):
     logger = logging.getLogger(name)
     logger.setLevel(level)
+    logger.handlers = []
     ch = logging.StreamHandler()
     ch.setLevel(level)
     formatter = logging.Formatter('%(levelname)s - %(name)s - %(message)s')
