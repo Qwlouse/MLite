@@ -81,7 +81,8 @@ class Experiment(object):
         fail_time = time.time()
         for o in self._observers:
             try:
-                o.experiment_aborted_event(fail_time=fail_time)
+                o.experiment_aborted_event(fail_time=fail_time,
+                                           info=self.info)
             except AttributeError:
                 pass
                 
@@ -106,7 +107,6 @@ class Experiment(object):
             result = self.run(*args)
             ###########################
             print(result)
-            # show all plots and wait
             sys.exit(0)
 
         return self._main_stage
