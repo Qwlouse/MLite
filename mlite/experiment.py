@@ -108,9 +108,11 @@ class Experiment(object):
             print(result)
             # show all plots and wait
             sys.exit(0)
+        else:
+            f.func_globals['__experiment__'] = self
 
         return self._main_stage
-        
+
     ######################## Experiment public Interface #######################
     def run(self, *args, **kwargs):
         self._initialize()
