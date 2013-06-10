@@ -25,7 +25,7 @@ import logging
 import numpy as np
 import sys
 
-SEED_RANGE = 0, sys.maxsize
+SEED_RANGE = 0, sys.maxsize // 10000
 
 
 def generate_seed(rnd=None):
