@@ -13,6 +13,9 @@ class ExperimentObserver(object):
                                  kwargs, info):
         pass
 
+    def experiment_info_updated(self, info):
+        pass
+
     def experiment_completed_event(self, stop_time, result, info):
         pass
 

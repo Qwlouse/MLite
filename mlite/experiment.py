@@ -6,6 +6,7 @@ import inspect
 import os
 import time
 from numpy.random import RandomState
+from mlite.plots import LivePlot
 from .stage import StageFunction
 from .utils import generate_seed, create_basic_stream_logger
 
@@ -63,6 +64,13 @@ class Experiment(object):
                                            info=self.info)
             except AttributeError:
                 pass
+                
+    def _emit_info_updated(self):
+        for o in self._observers:
+            try:
+                o.experiment_info_updated(info=self.info)
+            except AttributeError:
+                pass
 
     def _emit_completed(self, result):
         stop_time = time.time()
@@ -112,6 +120,11 @@ class Experiment(object):
             f.func_globals['__experiment__'] = self
 
         return self._main_stage
+        
+    def live_plot(self, f):
+        if not inspect.isgeneratorfunction(f):
+            raise TypeError("Live plots must be generator functions!")
+        self.add_observer(LivePlot(f))
 
     ######################## Experiment public Interface #######################
     def run(self, *args, **kwargs):
