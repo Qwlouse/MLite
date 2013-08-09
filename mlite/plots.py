@@ -14,27 +14,29 @@ class LivePlot(ExperimentObserver):
             raise TypeError("Live plots must be generator functions!")
         self.f = live_plot_function
         self.f_run = None
+        self.fig = None
         self.fps = fps
         self.last_update = 0
         self.stop_at_completion = stop_at_completion
 
-    def experiment_started_event(self, start_time, options, run_seed, args,
-                                 kwargs, info):
+    def start_plot(self):
         plt.ion()
         self.f_run = self.f()
-        self.f_run.next()
+        self.fig = self.f_run.next()
+
+    def update_plot(self, info):
+        self.f_run.send(info)
+        self.fig.canvas.draw()
+        self.last_update = time.time()
 
     def experiment_info_updated(self, info):
-        now = time.time()
-        if self.last_update + 1.0/self.fps < now:
-            self.f_run.send(info)
-            plt.draw()
-            self.last_update = now
+        if self.f_run is None:
+            self.start_plot()
+        if self.last_update + 1.0/self.fps < time.time():
+            self.update_plot(info)
 
     def experiment_completed_event(self, stop_time, result, info):
-
-        self.f_run.send(info)
-        plt.draw()
+        self.update_plot(info)
         if self.stop_at_completion:
             plt.ioff()
             plt.show()

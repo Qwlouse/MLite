@@ -124,7 +124,9 @@ class Experiment(object):
     def live_plot(self, f):
         if not inspect.isgeneratorfunction(f):
             raise TypeError("Live plots must be generator functions!")
-        self.add_observer(LivePlot(f))
+        lp = LivePlot(f)
+        self.add_observer(lp)
+        return lp
 
     ######################## Experiment public Interface #######################
     def run(self, *args, **kwargs):
