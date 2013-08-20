@@ -85,8 +85,14 @@ class MongoDBReporter(ExperimentObserver):
         self.experiment_entry['status'] = 'COMPLETED'
         self.save()
 
-    def experiment_aborted_event(self, fail_time, info):
+    def experiment_interrupted_event(self, interrupt_time, info):
+        self.experiment_entry['stop_time'] = interrupt_time
+        self.experiment_entry['info'] = info
+        self.experiment_entry['status'] = 'INTERRUPTED'
+        self.save()
+
+    def experiment_failed_event(self, fail_time, info):
         self.experiment_entry['stop_time'] = fail_time
         self.experiment_entry['info'] = info
-        self.experiment_entry['status'] = 'ABORTED'
+        self.experiment_entry['status'] = 'FAILED'
         self.save()

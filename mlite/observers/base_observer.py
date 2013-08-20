@@ -17,5 +17,8 @@ class ExperimentObserver(object):
     def experiment_completed_event(self, stop_time, result, info):
         pass
 
-    def experiment_aborted_event(self, fail_time, info):
+    def experiment_interrupted_event(self, interrupt_time, info):
+        pass
+
+    def experiment_failed_event(self, fail_time, info):
         pass

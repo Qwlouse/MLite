@@ -12,7 +12,7 @@ from .utils import generate_seed, create_basic_stream_logger
 
 
 class Experiment(object):
-    CONSTRUCTING, WAITING, RUNNING, COMPLETED, FAILED = range(5)
+    CONSTRUCTING, WAITING, RUNNING, COMPLETED, INTERRUPTED, FAILED = range(5)
 
     def __init__(self, name=None, seed=None, options=(), observers=(),
                  logger=None):
@@ -89,11 +89,20 @@ class Experiment(object):
         fail_time = time.time()
         for o in self._observers:
             try:
-                o.experiment_aborted_event(fail_time=fail_time,
+                o.experiment_failed_event(fail_time=fail_time,
                                            info=self.info)
             except AttributeError:
                 pass
-                
+
+    def _emit_interrupted(self):
+        self.logger.warning("Experiment aborted!")
+        interrupt_time = time.time()
+        for o in self._observers:
+            try:
+                o.experiment_interrupted_event(interrupt_time=interrupt_time,
+                                               info=self.info)
+            except AttributeError:
+                pass
     ############################## Decorators ##################################
     def stage(self, f):
         stage_func = StageFunction(f, default_options=self.options)
@@ -137,6 +146,10 @@ class Experiment(object):
             self._status = Experiment.COMPLETED
             self._emit_completed(result)
             return result
+        except KeyboardInterrupt:
+            self._status = Experiment.INTERRUPTED
+            self._emit_interrupted()
+            raise
         except:
             self._status = Experiment.FAILED
             self._emit_failed()
