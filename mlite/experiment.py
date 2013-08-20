@@ -12,7 +12,7 @@ from .utils import generate_seed, create_basic_stream_logger
 
 
 class Experiment(object):
-    CONSTRUCTING, WAITING, RUNNING, COMPLETED, INTERRUPTED, FAILED = range(5)
+    CONSTRUCTING, WAITING, RUNNING, COMPLETED, INTERRUPTED, FAILED = range(6)
 
     def __init__(self, name=None, seed=None, options=(), observers=(),
                  logger=None):
