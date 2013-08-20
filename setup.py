@@ -26,7 +26,7 @@ setup(
     version=mlite.__version__,
     author='Klaus Greff',
     author_email='qwlouse@gmail.com',
-    packages=['mlite', 'mlite.test'],
+    packages=['mlite', 'mlite.test', 'mlite.observers'],
     classifiers=filter(None, classifiers.split('\n')),
     scripts=[],
     url='http://pypi.python.org/pypi/MLizard/',
