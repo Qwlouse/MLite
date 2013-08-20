@@ -4,8 +4,8 @@
 from __future__ import division, print_function, unicode_literals
 import inspect
 import time
-from observers import ExperimentObserver
 import matplotlib.pyplot as plt
+from .observers import ExperimentObserver
 
 
 class LivePlot(ExperimentObserver):
