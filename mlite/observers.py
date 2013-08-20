@@ -3,6 +3,7 @@
 
 from __future__ import division, print_function, unicode_literals
 from copy import deepcopy
+import time
 
 
 class ExperimentObserver(object):
@@ -24,10 +25,13 @@ class ExperimentObserver(object):
 
 
 class CouchDBReporter(ExperimentObserver):
-    def __init__(self, url=None, db_name='mlite_experiments', credentials=None):
+    def __init__(self, url=None, db_name='mlite_experiments', credentials=None,
+                 save_delay=1):
         super(CouchDBReporter, self).__init__()
         self.experiment_skeleton = dict()
         self.experiment_entry = dict()
+        self.last_save = 0
+        self.save_delay = save_delay
         try:
             import couchdb
             couch = couchdb.Server(url) if url else couchdb.Server()
@@ -42,6 +46,7 @@ class CouchDBReporter(ExperimentObserver):
                               'package. Run pip install CouchDB to install it.')
 
     def save(self):
+        self.last_save = time.time()
         self.db.save(self.experiment_entry)
 
     def experiment_created_event(self, name, stages, seed, mainfile, doc):
@@ -64,6 +69,11 @@ class CouchDBReporter(ExperimentObserver):
         self.experiment_entry['info'] = info
         self.save()
 
+    def experiment_info_updated(self, info):
+        self.experiment_entry['info'] = info
+        if time.time() >= self.last_save + self.save_delay:
+            self.save()
+
     def experiment_completed_event(self, stop_time, result, info):
         self.experiment_entry['stop_time'] = stop_time
         self.experiment_entry['result'] = result
@@ -72,10 +82,12 @@ class CouchDBReporter(ExperimentObserver):
 
 
 class MongoDBReporter(ExperimentObserver):
-    def __init__(self, url=None, db_name='mlizard_experiments'):
+    def __init__(self, url=None, db_name='mlizard_experiments', save_delay=1):
         super(MongoDBReporter, self).__init__()
         self.experiment_skeleton = dict()
         self.experiment_entry = dict()
+        self.last_save = 0
+        self.save_delay = save_delay
         try:
             from pymongo import MongoClient
             mongo = MongoClient(url) if url else MongoClient(url)
@@ -85,6 +97,7 @@ class MongoDBReporter(ExperimentObserver):
                               'Run "pip install pymongo" to install it.')
 
     def save(self):
+        self.last_save = time.time()
         self.db.save(self.experiment_entry)
 
     def experiment_created_event(self, name, stages, seed, mainfile, doc):
@@ -107,6 +120,11 @@ class MongoDBReporter(ExperimentObserver):
         self.experiment_entry['info'] = info
         self.experiment_entry['status'] = 'RUNNING'
         self.save()
+
+    def experiment_info_updated(self, info):
+        self.experiment_entry['info'] = info
+        if time.time() >= self.last_save + self.save_delay:
+            self.save()
 
     def experiment_completed_event(self, stop_time, result, info):
         self.experiment_entry['stop_time'] = stop_time
