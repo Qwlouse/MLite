@@ -3,7 +3,6 @@
 """
 Some tests for the experiment class
 """
-
 from __future__ import division, print_function, unicode_literals
 from mock import Mock
 import unittest

@@ -90,7 +90,7 @@ class Experiment(object):
         for o in self._observers:
             try:
                 o.experiment_failed_event(fail_time=fail_time,
-                                           info=self.info)
+                                          info=self.info)
             except AttributeError:
                 pass
 
@@ -103,6 +103,7 @@ class Experiment(object):
                                                info=self.info)
             except AttributeError:
                 pass
+
     ############################## Decorators ##################################
     def stage(self, f):
         stage_func = StageFunction(f, default_options=self.options)
