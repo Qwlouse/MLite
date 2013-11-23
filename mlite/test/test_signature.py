@@ -22,12 +22,12 @@ def FunCTIonWithCAPItals(a, b, c=3, **kwargs):
     return a, b, c, kwargs
 
 
-def _name_with_underscore_(foo, bar, *baz):
-    return foo, bar, baz
+def _name_with_underscore_(fo, bar, *baz):
+    return fo, bar, baz
 
 
-def __double_underscore__(man, o, *men, **OO):
-    return man, o, men, OO
+def __double_underscore__(man, o, *men, **oo):
+    return man, o, men, oo
 
 
 def old_name(verylongvariablename):
@@ -62,7 +62,7 @@ class SignatureSpellsTest(unittest.TestCase):
 
     def test_Signature_constructor_extracts_all_arguments(self):
         arguments = [[], ['a', 'b', 'c'], ['a', 'b', 'c'], ['a', 'b', 'c'],
-                         ['foo', 'bar'], ['man', 'o'], ['verylongvariablename'],
+                         ['fo', 'bar'], ['man', 'o'], ['verylongvariablename'],
                          ['verylongvariablename']]
         for f, args in zip(functions, arguments):
             s = Signature(f)
@@ -79,7 +79,7 @@ class SignatureSpellsTest(unittest.TestCase):
                                  f.__name__, varg, s.vararg_name))
 
     def test_Signature_constructor_extract_kwargs_wildcard_name(self):
-        kw_wc_names = [None, None, None, 'kwargs', None, 'OO', None, None]
+        kw_wc_names = [None, None, None, 'kwargs', None, 'oo', None, None]
         for f, kw_wc in zip(functions, kw_wc_names):
             s = Signature(f)
             self.assertEqual(s.kw_wildcard_name, kw_wc,
@@ -87,7 +87,7 @@ class SignatureSpellsTest(unittest.TestCase):
                                  f.__name__, kw_wc, s.kw_wildcard_name))
 
     def test_Signature_constructor_extract_positional_arguments(self):
-        pos_args = [[], ['a', 'b', 'c'], [], ['a', 'b'], ['foo', 'bar'],
+        pos_args = [[], ['a', 'b', 'c'], [], ['a', 'b'], ['fo', 'bar'],
                     ['man', 'o'], ['verylongvariablename']]
         for f, pargs in zip(functions, pos_args):
             s = Signature(f)
@@ -111,40 +111,40 @@ class SignatureSpellsTest(unittest.TestCase):
         free = Signature(complex_function_name).get_free_parameters([], {})
         self.assertEqual(free, ['a', 'b', 'c'])
         free = Signature(_name_with_underscore_).get_free_parameters([], {})
-        self.assertEqual(free, ['foo', 'bar'])
+        self.assertEqual(free, ['fo', 'bar'])
         s = Signature(__double_underscore__)
         self.assertEqual(s.get_free_parameters([1, 2, 3], {}), [])
 
     def test_construct_arguments_with_unexpected_kwargs_raises_TypeError(self):
         kwargs = {'zimbabwe': 23}
         regex = ".*unexpected.*zimbabwe.*"
-        with self.assertRaisesRegex(TypeError, regex):
+        with self.assertRaisesRegexp(TypeError, regex):
             Signature(foo).construct_arguments([], kwargs, {})
-        with self.assertRaisesRegex(TypeError, regex):
+        with self.assertRaisesRegexp(TypeError, regex):
             Signature(bariza).construct_arguments([], kwargs, {})
-        with self.assertRaisesRegex(TypeError, regex):
+        with self.assertRaisesRegexp(TypeError, regex):
             s = Signature(complex_function_name)
             s.construct_arguments([], kwargs, {})
-        with self.assertRaisesRegex(TypeError, regex):
+        with self.assertRaisesRegexp(TypeError, regex):
             s = Signature(_name_with_underscore_)
             s.construct_arguments([], kwargs, {})
-        with self.assertRaisesRegex(TypeError, regex):
+        with self.assertRaisesRegexp(TypeError, regex):
             Signature(old_name).construct_arguments([], kwargs, {})
-        with self.assertRaisesRegex(TypeError, regex):
+        with self.assertRaisesRegexp(TypeError, regex):
             Signature(renamed).construct_arguments([], kwargs, {})
 
     def test_construct_arguments_with_unexpected_args_raises_TypeError(self):
         regex = ".*unexpected.*"
-        with self.assertRaisesRegex(TypeError, regex):
+        with self.assertRaisesRegexp(TypeError, regex):
             Signature(foo).construct_arguments([1], {}, {})
-        with self.assertRaisesRegex(TypeError, regex):
+        with self.assertRaisesRegexp(TypeError, regex):
             Signature(bariza).construct_arguments([1, 2, 3, 4], {}, {})
-        with self.assertRaisesRegex(TypeError, regex):
+        with self.assertRaisesRegexp(TypeError, regex):
             s = Signature(complex_function_name)
             s.construct_arguments([1, 2, 3, 4], {}, {})
-        with self.assertRaisesRegex(TypeError, regex):
+        with self.assertRaisesRegexp(TypeError, regex):
             Signature(old_name).construct_arguments([1, 2], {}, {})
-        with self.assertRaisesRegex(TypeError, regex):
+        with self.assertRaisesRegexp(TypeError, regex):
             Signature(renamed).construct_arguments([1, 2], {}, {})
 
     def test_construct_arguments_with_varargs_doesnt_raise(self):
@@ -153,35 +153,39 @@ class SignatureSpellsTest(unittest.TestCase):
             [1, 2, 3, 4, 5], {}, {})
         Signature(_name_with_underscore_).construct_arguments(
             [1, 2, 3, 4], {}, {})
+        self.assertTrue(True)
 
     def test_construct_arguments_with_kwargswildcard_doesnt_raise(self):
         kwargs = {'zimbabwe': 23}
         Signature(FunCTIonWithCAPItals).construct_arguments(
             [1, 2, 3], kwargs, {})
         Signature(__double_underscore__).construct_arguments([1, 2], kwargs, {})
+        self.assertTrue(True)
 
     def test_construct_arguments_with_expected_kwargs_does_not_raise(self):
         s = Signature(complex_function_name)
         s.construct_arguments([], {'a': 4, 'b': 3, 'c': 2}, {})
         s = Signature(FunCTIonWithCAPItals)
         s.construct_arguments([1, 2], {'c': 5}, {})
+        self.assertTrue(True)
 
     def test_construct_arguments_with_kwargs_for_posargs_does_not_raise(self):
         Signature(bariza).construct_arguments([], {'a': 4, 'b': 3, 'c': 2}, {})
         s = Signature(FunCTIonWithCAPItals)
         s.construct_arguments([], {'a': 4, 'b': 3, 'c': 2, 'd': 6}, {})
+        self.assertTrue(True)
 
     def test_construct_arguments_with_duplicate_args_raises_TypeError(self):
         regex = ".*multiple values.*"
-        with self.assertRaisesRegex(TypeError, regex):
+        with self.assertRaisesRegexp(TypeError, regex):
             s = Signature(bariza)
             s.construct_arguments([1, 2, 3], {'a': 4, 'b': 5}, {})
 
-        with self.assertRaisesRegex(TypeError, regex):
+        with self.assertRaisesRegexp(TypeError, regex):
             s = Signature(complex_function_name)
             s.construct_arguments([1], {'a': 4}, {})
 
-        with self.assertRaisesRegex(TypeError, regex):
+        with self.assertRaisesRegexp(TypeError, regex):
             s = Signature(FunCTIonWithCAPItals)
             s.construct_arguments([1, 2, 3], {'c': 6}, {})
 
@@ -194,6 +198,7 @@ class SignatureSpellsTest(unittest.TestCase):
 
         s = Signature(FunCTIonWithCAPItals)
         s.construct_arguments([], {'a': 6, 'b': 6, 'c': 6}, {})
+        self.assertTrue(True)
 
     def test_construct_arguments_without_options_returns_same_args_kwargs(self):
         s = Signature(foo)
@@ -212,9 +217,9 @@ class SignatureSpellsTest(unittest.TestCase):
         self.assertEqual(kwargs, {'c': 6, 'b': 7})
 
         s = Signature(_name_with_underscore_)
-        args, kwargs = s.construct_arguments([], {'foo': 7, 'bar': 6}, {})
+        args, kwargs = s.construct_arguments([], {'fo': 7, 'bar': 6}, {})
         self.assertEqual(args, [])
-        self.assertEqual(kwargs, {'foo': 7, 'bar': 6})
+        self.assertEqual(kwargs, {'fo': 7, 'bar': 6})
 
     def test_construct_arguments_completes_kwargs_from_options(self):
         s = Signature(bariza)
@@ -228,9 +233,9 @@ class SignatureSpellsTest(unittest.TestCase):
         self.assertEqual(kwargs, {'a': 1, 'c': 6, 'b': 7})
 
         s = Signature(_name_with_underscore_)
-        args, kwargs = s.construct_arguments([], {}, {'foo': 7, 'bar': 6})
+        args, kwargs = s.construct_arguments([], {}, {'fo': 7, 'bar': 6})
         self.assertEqual(args, [])
-        self.assertEqual(kwargs, {'foo': 7, 'bar': 6})
+        self.assertEqual(kwargs, {'fo': 7, 'bar': 6})
 
     def test_construct_arguments_ignores_excess_options(self):
         s = Signature(bariza)
@@ -255,13 +260,13 @@ class SignatureSpellsTest(unittest.TestCase):
     def test_construct_arguments_raises_if_args_unfilled(self):
         s = Signature(bariza)
         regex = ".*missing.*"
-        with self.assertRaisesRegex(TypeError, regex):
+        with self.assertRaisesRegexp(TypeError, regex):
             s.construct_arguments([], {}, {})
-        with self.assertRaisesRegex(TypeError, regex):
+        with self.assertRaisesRegexp(TypeError, regex):
             s.construct_arguments([1, 2], {}, {})
-        with self.assertRaisesRegex(TypeError, regex):
+        with self.assertRaisesRegexp(TypeError, regex):
             s.construct_arguments([1], {'b': 3}, {})
-        with self.assertRaisesRegex(TypeError, regex):
+        with self.assertRaisesRegexp(TypeError, regex):
             s.construct_arguments([1], {'c': 5}, {})
 
     def test_construct_arguments_does_not_raise_if_all_args_filled(self):
@@ -270,24 +275,26 @@ class SignatureSpellsTest(unittest.TestCase):
         s.construct_arguments([1, 2], {'c': 6}, {})
         s.construct_arguments([1], {'b': 6, 'c': 6}, {})
         s.construct_arguments([], {'a': 6, 'b': 6, 'c': 6}, {})
+        self.assertTrue(True)
 
     def test_construct_arguments_does_not_raise_for_missing_defaults(self):
         s = Signature(complex_function_name)
         s.construct_arguments([], {}, {})
+        self.assertTrue(True)
 
     def test_unicode_(self):
         self.assertEqual(Signature(foo).__unicode__(),
                          "foo()")
         self.assertEqual(Signature(bariza).__unicode__(),
                          "bariza(a, b, c)")
-        self.assertEqual(Signature(complex_function_name).__unicode__(),
-                         "complex_function_name(a=1, b='fo', c=9)")
+        self.assertRegexpMatches(Signature(complex_function_name).__unicode__(),
+                                 "complex_function_name\(a=1, b=u?'fo', c=9\)")
         self.assertEqual(Signature(FunCTIonWithCAPItals).__unicode__(),
                          "FunCTIonWithCAPItals(a, b, c=3, **kwargs)")
         self.assertEqual(Signature(_name_with_underscore_).__unicode__(),
-                         "_name_with_underscore_(foo, bar, *baz)")
+                         "_name_with_underscore_(fo, bar, *baz)")
         self.assertEqual(Signature(__double_underscore__).__unicode__(),
-                         "__double_underscore__(man, o, *men, **OO)")
+                         "__double_underscore__(man, o, *men, **oo)")
         self.assertEqual(Signature(old_name).__unicode__(),
                          "old_name(verylongvariablename)")
         self.assertEqual(Signature(renamed).__unicode__(),
@@ -299,23 +306,23 @@ class SignatureSpellsTest(unittest.TestCase):
 
     def test_repr_(self):
         regex = "<Signature at 0x[0-9a-fA-F]+ for '%s'>"
-        self.assertRegex(Signature(foo).__repr__(),
-                         regex % "foo")
-        self.assertRegex(Signature(bariza).__repr__(),
-                         regex % "bariza")
-        self.assertRegex(Signature(complex_function_name).__repr__(),
-                         regex % "complex_function_name")
-        self.assertRegex(Signature(FunCTIonWithCAPItals).__repr__(),
-                         regex % "FunCTIonWithCAPItals")
-        self.assertRegex(Signature(_name_with_underscore_).__repr__(),
-                         regex % "_name_with_underscore_")
-        self.assertRegex(Signature(__double_underscore__).__repr__(),
-                         regex % "__double_underscore__")
-        self.assertRegex(Signature(old_name).__repr__(),
-                         regex % "old_name")
-        self.assertRegex(Signature(renamed).__repr__(),
-                         regex % "old_name")
-        self.assertRegex(Signature(generic).__repr__(),
-                         regex % "generic")
-        self.assertRegex(Signature(onlykwrgs).__repr__(),
-                         regex % "onlykwrgs")
+        self.assertRegexpMatches(Signature(foo).__repr__(),
+                                 regex % "foo")
+        self.assertRegexpMatches(Signature(bariza).__repr__(),
+                                 regex % "bariza")
+        self.assertRegexpMatches(Signature(complex_function_name).__repr__(),
+                                 regex % "complex_function_name")
+        self.assertRegexpMatches(Signature(FunCTIonWithCAPItals).__repr__(),
+                                 regex % "FunCTIonWithCAPItals")
+        self.assertRegexpMatches(Signature(_name_with_underscore_).__repr__(),
+                                 regex % "_name_with_underscore_")
+        self.assertRegexpMatches(Signature(__double_underscore__).__repr__(),
+                                 regex % "__double_underscore__")
+        self.assertRegexpMatches(Signature(old_name).__repr__(),
+                                 regex % "old_name")
+        self.assertRegexpMatches(Signature(renamed).__repr__(),
+                                 regex % "old_name")
+        self.assertRegexpMatches(Signature(generic).__repr__(),
+                                 regex % "generic")
+        self.assertRegexpMatches(Signature(onlykwrgs).__repr__(),
+                                 regex % "onlykwrgs")

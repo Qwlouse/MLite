@@ -4,6 +4,7 @@
 Some tests for the experiment class
 """
 from __future__ import division, print_function, unicode_literals
+import inspect
 from mock import Mock
 import unittest
 import time
@@ -176,6 +177,7 @@ class ExperimentTest(unittest.TestCase):
     def test_experiment_created_event(self):
         m = Mock()
         name = 'test1234'
+        thisfile = inspect.getabsfile(self.__class__)
         ex = create_test_experiment(name=name, seed=17)
         ex.add_observer(m)
 
@@ -190,7 +192,7 @@ class ExperimentTest(unittest.TestCase):
         self.assertTrue(m.experiment_created_event.called)
         m.experiment_created_event.assert_called_with(name=name,
                                                       stages=[foo, bar],
-                                                      mainfile=__file__,
+                                                      mainfile=thisfile,
                                                       seed=17,
                                                       doc=__doc__)
 
