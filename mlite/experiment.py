@@ -1,6 +1,7 @@
 #!/usr/bin/python
 # coding=utf-8
 from __future__ import division, print_function, unicode_literals
+from copy import deepcopy
 from datetime import timedelta
 import inspect
 import os
@@ -179,3 +180,38 @@ class Experiment(object):
             self.logger.debug("No logger given. Created basic stream logger.")
         for s in self._stages:
             s.logger = self.logger.getChild(s.__name__)
+
+    ################################## Optionsets ##############################
+    def optionset(self, section_name):
+        options = deepcopy(self.options)
+        options.update(self.options[section_name])
+        return OptionContext(options, self._stages)
+
+
+class StageFunctionOptionsView(object):
+    def __init__(self, stage_func, options):
+        self.options = options
+        self.func = stage_func
+
+    def __call__(self, *args, **kwargs):
+        return self.func.execute(args, kwargs, self.options)
+
+
+class OptionContext(object):
+    def __init__(self, options, stage_functions):
+        self.options = options
+        for sf in stage_functions:
+            sf_view = StageFunctionOptionsView(sf, options)
+            self.__setattr__(sf.__name__, sf_view)
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        pass
+
+    def keys(self):
+        return self.options.keys()
+
+    def __getitem__(self, item):
+        return self.options[item]
