@@ -163,6 +163,9 @@ class Experiment(object):
         self._status = Experiment.RUNNING
 
     def _reseed(self):
+        if 'seed' in self.options:
+            self.seed = self.options['seed']
+
         if self.seed is None:
             self._run_seed = generate_seed()
             self.logger.warning("No seed given. Using seed=%d. Set in config"
