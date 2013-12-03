@@ -15,11 +15,11 @@ from .utils import generate_seed, create_basic_stream_logger
 class Experiment(object):
     CONSTRUCTING, WAITING, RUNNING, COMPLETED, INTERRUPTED, FAILED = range(6)
 
-    def __init__(self, name=None, seed=None, options=(), observers=(),
+    def __init__(self, name=None, seed=None, options=None, observers=(),
                  logger=None):
         self.info = dict()
         self.logger = logger
-        self.options = options
+        self.options = options if options is not None else dict()
         self.seed = seed
         self.__doc__ = None
         self.__name__ = name
