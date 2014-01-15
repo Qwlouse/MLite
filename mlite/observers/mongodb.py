@@ -9,6 +9,7 @@ import time
 try:
     from pymongo import MongoClient
     from pymongo.son_manipulator import SONManipulator
+    from bson import Binary
 except ImportError:
     raise ImportError('This Observer depends on the pymongo package. '
                       'Run "pip install pymongo" to install it.')
@@ -21,7 +22,7 @@ class PickleNumpyArrays(SONManipulator):
         for (key, value) in son.items():
             if isinstance(value, np.ndarray):
                 son[key] = {"_type": "ndarray",
-                            "_value": cPickle.dumps(value, protocol=2)}
+                            "_value": Binary(cPickle.dumps(value, protocol=2))}
             elif isinstance(value, dict):  # Make sure we recurse into sub-docs
                 son[key] = self.transform_incoming(value, collection)
         return son
